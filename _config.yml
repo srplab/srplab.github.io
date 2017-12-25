@@ -18,7 +18,7 @@ email: srplab.cn@hotmail.com
 description: >- # this means to ignore newlines until "baseurl:"
   CLE is a cross-platform and easy-to-use middleware which supports multiple programming language interoperability
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://www.srplab.com" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://srplab.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: ""
 github_username:  srplab
 
