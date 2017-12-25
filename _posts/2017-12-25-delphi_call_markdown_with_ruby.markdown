@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Delphi Call Markdown With Ruby"
+title:  "Delphi Call Kramdown With Ruby"
 date:   2017-12-25 16:49:07 +0800
 categories: delphi
 ---
