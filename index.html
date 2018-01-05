@@ -1,0 +1,63 @@
+---
+layout: default
+title: 
+---
+
+<style>
+.pagination{float:right;padding-top:1em; }
+.pagetag{float:right;}
+</style>
+
+<!-- This loops through the paginated posts -->
+{% for post in paginator.posts %}
+  <!-- <h1><a href="{{ post.url }}">{{ post.title }}</a></h1>
+  <p class="author">
+    <span class="date">{{ post.date }}</span>
+  </p>
+  <div class="content">
+    {{ post.content }}
+  </div>
+  -->
+  <h1>
+      <a href="{{ post.url }}">{{ post.title }}</a>
+  </h1>
+  <p class="author">
+    <span class="date">{{ post.date | date: '%B %d, %Y' }}</span>
+  </p>  
+{% endfor %}
+
+<div>
+
+<!-- <h2>Archive</h2> -->
+<div class="pagetag">
+{% capture temptags %}
+  {% for tag in site.tags %}
+    {{ tag[1].size | plus: 1000 }}#{{ tag[0] }}#{{ tag[1].size }}
+  {% endfor %}
+{% endcapture %}
+{% assign sortedtemptags = temptags | split:' ' | sort | reverse %}
+{% for temptag in sortedtemptags %}
+  {% assign tagitems = temptag | split: '#' %}
+  {% capture tagname %}{{ tagitems[1] }}{% endcapture %}
+  <a href="/tag/{{ tagname }}"><code class="highligher-rouge"><nobr>{{ tagname }}</nobr></code></a>
+{% endfor %}
+</div>
+
+<div style="clear:both"></div>
+
+<!-- Pagination links -->
+<div class="pagination">
+  {% if paginator.previous_page %}
+    <a href="{{ paginator.previous_page_path }}" class="previous">Previous</a>
+  {% else %}
+    <span class="previous">Previous</span>
+  {% endif %}
+  <span class="page_number ">Page: {{ paginator.page }} of {{ paginator.total_pages }}</span>
+  {% if paginator.next_page %}
+    <a href="{{ paginator.next_page_path }}" class="next">Next</a>
+  {% else %}
+    <span class="next ">Next</span>
+  {% endif %}
+</div>
+
+</div>

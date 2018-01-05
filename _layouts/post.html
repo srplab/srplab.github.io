@@ -1,0 +1,87 @@
+---
+
+layout: default
+
+---
+
+
+<style>
+.postdate{padding-top:1em; padding-bottom:2em;}
+</style>
+
+{% if page.lang %}
+
+<div class="post" lang="{{page.lang}}">
+
+{% else %}
+
+<div class="post">
+
+{% endif %}
+
+  <h1 class="post-title">{{ page.title }}</h1>
+
+  <div class="posttag">
+  <span class="post-tags">
+
+    {% for tag in page.tags %}
+
+      {% capture tag_name %}{{ tag }}{% endcapture %}
+
+      <a class="no-underline" href="/tag/{{ tag_name }}"><code class="highligher-rouge"><nobr>{{ tag_name }}</nobr></code>&nbsp;</a>    
+
+    {% endfor %}
+
+  </span>
+  </div>
+
+  <div style="clear:both"></div>
+  <div class="postdate">
+      <span class="post-date">{{ page.date | date_to_string }}</span>
+  </div>
+
+  {{ content }}
+
+</div>
+
+
+
+
+
+<div class="related">
+
+  <h1 align = "left"><font color="#FF9900">Related Posts</font></h1>
+
+  <ul class="related-posts">
+
+    {% for post in site.related_posts limit:3 %}
+
+      {% if post.lang %}
+
+      <li lang="{{ post.lang }}">
+
+      {% else %}
+
+      <li>
+
+      {% endif %}
+
+        <h3>
+
+          <a href="{{ post.url }}">
+
+            {{ post.title }}
+
+            <small><font color="#707070">{{ post.date | date_to_string }}</font></small>
+
+          </a>
+
+        </h3>
+
+      </li>
+
+    {% endfor %}
+
+  </ul>
+
+</div>
