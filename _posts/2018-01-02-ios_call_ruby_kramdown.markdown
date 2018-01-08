@@ -3,7 +3,11 @@ layout: post
 title:  "ios Call Ruby Kramdown"
 date:   2018-01-02 20:47:07 +0800
 categories: ios
+tags: ios ruby xcode
 ---
+
+### The example shows how to use kramdown to convert markdown file to html in apps developed with object-c/c++ for iphone.
+
 {% include codeformat.html %}
 
 <h1 align = "left"><font color="#FF9900">Introduction</font></h1>

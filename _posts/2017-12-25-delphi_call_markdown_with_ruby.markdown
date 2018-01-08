@@ -3,7 +3,11 @@ layout: post
 title:  "Delphi Call Kramdown With Ruby"
 date:   2017-12-25 16:49:07 +0800
 categories: delphi
+tags: delphi ruby
 ---
+
+### The example shows how to use kramdown to convert markdown file to html in apps developed with delphi.
+
 {% include codeformat.html %}
 
 <h1 align = "left"><font color="#FF9900">Introduction</font></h1>

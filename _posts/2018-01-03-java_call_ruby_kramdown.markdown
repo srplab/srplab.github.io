@@ -3,7 +3,11 @@ layout: post
 title:  "Java Call Ruby Kramdown"
 date:   2018-01-03 20:09:07 +0800
 categories: java
+tags: java ruby
 ---
+
+### The example shows how java calls kramdown to convert markdown file to html.
+
 {% include codeformat.html %}
 
 <h1 align = "left"><font color="#FF9900">Introduction</font></h1>

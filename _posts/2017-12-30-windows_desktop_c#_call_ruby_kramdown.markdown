@@ -3,7 +3,11 @@ layout: post
 title:  "Windows Desktop C# Call Ruby Kramdown"
 date:   2017-12-30 19:53:07 +0800
 categories: windows_desktop_csharp
+tags: csharp ruby
 ---
+
+### The example shows how to use kramdown to convert markdown file to html in apps developed with c# for windows desktop.
+
 {% include codeformat.html %}
 
 <h1 align = "left"><font color="#FF9900">Introduction</font></h1>

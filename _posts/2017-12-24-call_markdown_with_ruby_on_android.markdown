@@ -3,9 +3,10 @@ layout: post
 title:  "Call Kramdown with Ruby on Android"
 date:   2017-12-21 15:31:07 +0800
 categories: android
+tags: android ruby
 ---
 
-### This is the first blog. 
+### This is the first blog. The example shows how to use kramdown to convert markdown file to html on android platform.
 
 <h1 align = "left"><font color="#FF9900">Introduction</font></h1>
 

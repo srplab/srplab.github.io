@@ -3,10 +3,12 @@ layout: post
 title:  "UWP C# Call Ruby Kramdown"
 date:   2018-01-06 20:26:07 +0800
 categories: win10_uwp_csharp
+tags: csharp ruby uwp
 ---
-{% include codeformat.html %}
 
 ### The example shows how c# calls kramdown to convert markdown file to html in application written for UWP(Universal Windows Platform).
+
+{% include codeformat.html %}
 
 <h1 align = "left"><font color="#FF9900">Introduction</font></h1>
 
