@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Compiling and Using Python Module in Android Application"
-date:   2018-06-02 21:10:07 +0800
+date:   2018-06-01 21:10:07 +0800
 categories: android
 tags: python java android
 ---
