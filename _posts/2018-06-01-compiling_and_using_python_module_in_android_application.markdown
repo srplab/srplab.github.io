@@ -18,7 +18,7 @@ To illustrate how to compile, we chose a python module [aiohttp](https://github.
 
 * Download and unzip aiohttp
 
-* Copy files about python 3.6, which can be found from starcore_for_android, to the same directory with aiphttp.
+* Copy files about python 3.6, which can be found from starcore_for_android, to the same directory with aiohttp.
 
   ![](/images/compiling_and_using_python_module_in_android_pci1.png){:width="640px"}
 
@@ -40,7 +40,7 @@ export READELF="arm-linux-androideabi-readelf"
 export MAKE="make -j4 CROSS_COMPILE_TARGET=yes"
 ```
 
-* Change the setup.py of aiphttp
+* Change the setup.py of aiohttp
 
 Add the following code to function "build_extension" of class "ve_build_ext" of setup.py
 
@@ -76,7 +76,7 @@ class ve_build_ext(build_ext):
   
 The above code may need to make some adjustments based on the system environment    
   
-* Compile aiphttp
+* Compile aiohttp
 
 ```sh
 python3 setup.py build
