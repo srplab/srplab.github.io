@@ -124,7 +124,17 @@ Initialize python
   }
 ```
 
-### 6. screenshot
+### 6. compile for ios
+
+```sh
+$ flutter clean
+$ export STARCORE_PATH='/Users/srplab/Desktop'
+$ export STARCORE_PYTHONVERSION='3.6'
+$ export STARCORE_PYTHONLIBRARY='star_python36,python3.6m'
+$ flutter build ios --no-codesign
+```
+
+### 7. screenshot
 
 ![](/images/flutter_and_python_ios_screenshot.png){:width="320px"}
 
