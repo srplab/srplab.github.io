@@ -1,0 +1,228 @@
+I"ÿ‚<h3 id="this-is-the-first-blog-the-example-shows-how-to-use-kramdown-to-convert-markdown-file-to-html-on-android-platform">This is the first blog. The example shows how to use kramdown to convert markdown file to html on android platform.</h3>
+
+<h1 align="left"><font color="#FF9900">Introduction</font></h1>
+
+<p>Normally, jekyll uses kramdown to parse the markdown file. kramdown can convert markdown file to html which is written in pure ruby.</p>
+
+<p>The example shows how to use kramdown to convert markdown file to html.</p>
+
+<h1 align="left"><font color="#FF9900">Background</font></h1>
+
+<p>This example is based on CLE. CLE supports android platform, ruby language, and interaction between ruby and java.</p>
+
+<h3 id="1-create-project-and-add-the-dependent-files">1. Create project and Add the dependent files</h3>
+
+<ul>
+  <li>add starcore_android_rX.XX.jar and share libraries</li>
+</ul>
+
+<p><img src="/images/2017-12-24-call_markdown_with_ruby_on_android_pic1.png" alt="" width="320px" /></p>
+
+<ul>
+  <li>pack ruby libraries to zip file</li>
+</ul>
+
+<p>In this sample, ruby 2.2 is used.</p>
+
+<p><img src="/images/2017-12-24-call_markdown_with_ruby_on_android_pic2.png" alt="" width="320px" /></p>
+
+<ul>
+  <li>pack kramdown-1.16.2 to zip file</li>
+</ul>
+
+<p><img src="/images/2017-12-24-call_markdown_with_ruby_on_android_pic3.png" alt="" width="320px" /></p>
+
+<ul>
+  <li>add files to project folder assets</li>
+</ul>
+
+<p><img src="/images/2017-12-24-call_markdown_with_ruby_on_android_pic4.png" alt="" width="160px" /></p>
+
+<h3 id="2-public-function-extract-the-zip-file-to-the-applications-installation-directory">2. Public function, Extract the zip file to the applicationâ€™s installation directory</h3>
+
+<ul>
+  <li>copyFile</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">copyFile</span><span class="o">(</span><span class="nc">Activity</span> <span class="n">c</span><span class="o">,</span> <span class="nc">String</span> <span class="nc">Name</span><span class="o">,</span><span class="nc">String</span> <span class="n">desPath</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">IOException</span> <span class="o">{</span>
+        <span class="nc">File</span> <span class="n">outfile</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="k">if</span><span class="o">(</span> <span class="n">desPath</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">)</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"/data/data/"</span><span class="o">+</span><span class="n">getPackageName</span><span class="o">()+</span><span class="s">"/files/"</span><span class="o">+</span><span class="n">desPath</span><span class="o">+</span><span class="nc">Name</span><span class="o">);</span>
+        <span class="k">else</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"/data/data/"</span><span class="o">+</span><span class="n">getPackageName</span><span class="o">()+</span><span class="s">"/files/"</span><span class="o">+</span><span class="nc">Name</span><span class="o">);</span>
+        <span class="c1">//if (!outfile.exists()) {</span>
+        <span class="o">{</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="na">createNewFile</span><span class="o">();</span>
+            <span class="nc">FileOutputStream</span> <span class="n">out</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">FileOutputStream</span><span class="o">(</span><span class="n">outfile</span><span class="o">);</span>
+            <span class="kt">byte</span><span class="o">[]</span> <span class="n">buffer</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="mi">1024</span><span class="o">];</span>
+            <span class="nc">InputStream</span> <span class="n">in</span><span class="o">;</span>
+            <span class="kt">int</span> <span class="n">readLen</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+            <span class="k">if</span><span class="o">(</span> <span class="n">desPath</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">)</span>
+                <span class="n">in</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">getAssets</span><span class="o">().</span><span class="na">open</span><span class="o">(</span><span class="n">desPath</span><span class="o">+</span><span class="nc">Name</span><span class="o">);</span>
+            <span class="k">else</span>
+                <span class="n">in</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">getAssets</span><span class="o">().</span><span class="na">open</span><span class="o">(</span><span class="nc">Name</span><span class="o">);</span>
+            <span class="k">while</span><span class="o">((</span><span class="n">readLen</span> <span class="o">=</span> <span class="n">in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buffer</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">){</span>
+                <span class="n">out</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">buffer</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">readLen</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="n">out</span><span class="o">.</span><span class="na">flush</span><span class="o">();</span>
+            <span class="n">in</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+            <span class="n">out</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span></code></pre></figure>
+
+<ul>
+  <li>unzip</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java"><span class="kd">private</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">CreatePath</span><span class="o">(</span><span class="nc">String</span> <span class="nc">Path</span><span class="o">){</span>
+        <span class="nc">File</span> <span class="n">destCardDir</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="nc">Path</span><span class="o">);</span>
+        <span class="k">if</span><span class="o">(!</span><span class="n">destCardDir</span><span class="o">.</span><span class="na">exists</span><span class="o">()){</span>
+            <span class="kt">int</span> <span class="nc">Index</span> <span class="o">=</span> <span class="nc">Path</span><span class="o">.</span><span class="na">lastIndexOf</span><span class="o">(</span><span class="nc">File</span><span class="o">.</span><span class="na">separator</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="mi">0</span><span class="o">));</span>
+            <span class="k">if</span><span class="o">(</span> <span class="nc">Index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">){</span>
+                <span class="k">if</span><span class="o">(</span> <span class="n">destCardDir</span><span class="o">.</span><span class="na">mkdirs</span><span class="o">()</span> <span class="o">==</span> <span class="kc">false</span> <span class="o">)</span>
+                    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+            <span class="o">}</span><span class="k">else</span><span class="o">{</span>
+                <span class="nc">String</span> <span class="nc">ParentPath</span> <span class="o">=</span> <span class="nc">Path</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="nc">Index</span><span class="o">);</span>
+                <span class="k">if</span><span class="o">(</span> <span class="nc">CreatePath</span><span class="o">(</span><span class="nc">ParentPath</span><span class="o">)</span> <span class="o">==</span> <span class="kc">false</span> <span class="o">)</span>
+                    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+                <span class="k">if</span><span class="o">(</span> <span class="n">destCardDir</span><span class="o">.</span><span class="na">mkdirs</span><span class="o">()</span> <span class="o">==</span> <span class="kc">false</span> <span class="o">)</span>
+                    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">unzip</span><span class="o">(</span><span class="nc">InputStream</span> <span class="n">zipFileName</span><span class="o">,</span> <span class="nc">String</span> <span class="n">outputDirectory</span><span class="o">,</span><span class="nc">Boolean</span> <span class="nc">OverWriteFlag</span> <span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">ZipInputStream</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ZipInputStream</span><span class="o">(</span><span class="n">zipFileName</span><span class="o">);</span>
+            <span class="nc">ZipEntry</span> <span class="n">entry</span> <span class="o">=</span> <span class="n">in</span><span class="o">.</span><span class="na">getNextEntry</span><span class="o">();</span>
+            <span class="kt">byte</span><span class="o">[]</span> <span class="n">buffer</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="mi">1024</span><span class="o">];</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">entry</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="nc">File</span> <span class="n">file</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="n">outputDirectory</span><span class="o">);</span>
+                <span class="n">file</span><span class="o">.</span><span class="na">mkdir</span><span class="o">();</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">entry</span><span class="o">.</span><span class="na">isDirectory</span><span class="o">())</span> <span class="o">{</span>
+                    <span class="nc">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">name</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
+                    <span class="k">if</span><span class="o">(</span> <span class="nc">CreatePath</span><span class="o">(</span><span class="n">outputDirectory</span> <span class="o">+</span> <span class="nc">File</span><span class="o">.</span><span class="na">separator</span> <span class="o">+</span> <span class="n">name</span><span class="o">)</span> <span class="o">==</span> <span class="kc">false</span> <span class="o">)</span>
+                        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+                <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                    <span class="nc">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">outputDirectory</span> <span class="o">+</span> <span class="nc">File</span><span class="o">.</span><span class="na">separator</span> <span class="o">+</span> <span class="n">entry</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+                    <span class="kt">int</span> <span class="nc">Index</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="na">lastIndexOf</span><span class="o">(</span><span class="nc">File</span><span class="o">.</span><span class="na">separator</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="mi">0</span><span class="o">));</span>
+                    <span class="k">if</span><span class="o">(</span> <span class="nc">Index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">){</span>
+                        <span class="n">file</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="n">outputDirectory</span> <span class="o">+</span> <span class="nc">File</span><span class="o">.</span><span class="na">separator</span> <span class="o">+</span> <span class="n">entry</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
+                    <span class="o">}</span><span class="k">else</span><span class="o">{</span>
+                        <span class="nc">String</span> <span class="nc">ParentPath</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="nc">Index</span><span class="o">);</span>
+                        <span class="k">if</span><span class="o">(</span> <span class="nc">CreatePath</span><span class="o">(</span><span class="nc">ParentPath</span><span class="o">)</span> <span class="o">==</span> <span class="kc">false</span> <span class="o">)</span>
+                            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+                        <span class="n">file</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="n">outputDirectory</span> <span class="o">+</span> <span class="nc">File</span><span class="o">.</span><span class="na">separator</span> <span class="o">+</span> <span class="n">entry</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
+                    <span class="o">}</span>
+                    <span class="k">if</span><span class="o">(</span> <span class="o">!</span><span class="n">file</span><span class="o">.</span><span class="na">exists</span><span class="o">()</span> <span class="o">||</span> <span class="nc">OverWriteFlag</span> <span class="o">==</span> <span class="kc">true</span><span class="o">){</span>
+                        <span class="n">file</span><span class="o">.</span><span class="na">createNewFile</span><span class="o">();</span>
+                        <span class="nc">FileOutputStream</span> <span class="n">out</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">FileOutputStream</span><span class="o">(</span><span class="n">file</span><span class="o">);</span>
+                        <span class="kt">int</span> <span class="n">readLen</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+                        <span class="k">while</span><span class="o">((</span><span class="n">readLen</span> <span class="o">=</span> <span class="n">in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buffer</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">){</span>
+                            <span class="n">out</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">buffer</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">readLen</span><span class="o">);</span>
+                        <span class="o">}</span>
+                        <span class="n">out</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+                <span class="n">entry</span> <span class="o">=</span> <span class="n">in</span><span class="o">.</span><span class="na">getNextEntry</span><span class="o">();</span>
+            <span class="o">}</span>
+            <span class="n">in</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+            <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">FileNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span></code></pre></figure>
+
+<h1 align="left"><font color="#FF9900">Using the code</font></h1>
+
+<h3 id="1-unzip-the-file-to-app-folder">1. Unzip the file to app folder</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">        <span class="nc">File</span> <span class="n">destDir</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"/data/data/"</span><span class="o">+</span><span class="n">getPackageName</span><span class="o">()+</span><span class="s">"/files"</span><span class="o">);</span>
+        <span class="k">if</span><span class="o">(!</span><span class="n">destDir</span><span class="o">.</span><span class="na">exists</span><span class="o">())</span>
+            <span class="n">destDir</span><span class="o">.</span><span class="na">mkdirs</span><span class="o">();</span>
+        <span class="kd">final</span> <span class="nc">String</span> <span class="n">nativeLibraryDir</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">getApplicationInfo</span><span class="o">().</span><span class="na">nativeLibraryDir</span><span class="o">;</span>
+        <span class="k">try</span><span class="o">{</span>
+            <span class="nc">AssetManager</span> <span class="n">assetManager</span> <span class="o">=</span> <span class="n">getAssets</span><span class="o">();</span>
+            <span class="nc">InputStream</span> <span class="n">dataSource</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="n">dataSource</span> <span class="o">=</span> <span class="n">assetManager</span><span class="o">.</span><span class="na">open</span><span class="o">(</span><span class="s">"ruby-2.2.zip"</span><span class="o">);</span>
+            <span class="n">unzip</span><span class="o">(</span><span class="n">dataSource</span><span class="o">,</span> <span class="s">"/data/data/"</span><span class="o">+</span><span class="n">getPackageName</span><span class="o">()+</span><span class="s">"/files"</span><span class="o">,</span><span class="kc">false</span> <span class="o">);</span>
+            <span class="n">dataSource</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+
+            <span class="n">dataSource</span> <span class="o">=</span> <span class="n">assetManager</span><span class="o">.</span><span class="na">open</span><span class="o">(</span><span class="s">"kramdown-1.16.2.zip"</span><span class="o">);</span>
+            <span class="n">unzip</span><span class="o">(</span><span class="n">dataSource</span><span class="o">,</span> <span class="s">"/data/data/"</span><span class="o">+</span><span class="n">getPackageName</span><span class="o">()+</span><span class="s">"/files"</span><span class="o">,</span><span class="kc">false</span> <span class="o">);</span>
+            <span class="n">dataSource</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">catch</span><span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span>
+        <span class="o">{</span>
+
+        <span class="o">}</span></code></pre></figure>
+
+<h3 id="2-initilize-cle">2. Initilize CLE</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">        <span class="cm">/*----init starcore----*/</span>
+        <span class="nc">StarCoreFactoryPath</span><span class="o">.</span><span class="na">StarCoreCoreLibraryPath</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">getApplicationInfo</span><span class="o">().</span><span class="na">nativeLibraryDir</span><span class="o">;</span>
+        <span class="nc">StarCoreFactoryPath</span><span class="o">.</span><span class="na">StarCoreShareLibraryPath</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">getApplicationInfo</span><span class="o">().</span><span class="na">nativeLibraryDir</span><span class="o">;</span>
+        <span class="nc">StarCoreFactoryPath</span><span class="o">.</span><span class="na">StarCoreOperationPath</span> <span class="o">=</span> <span class="s">"/data/data/"</span><span class="o">+</span><span class="n">getPackageName</span><span class="o">()+</span><span class="s">"/files"</span><span class="o">;</span>
+
+        <span class="kd">final</span> <span class="nc">StarCoreFactory</span> <span class="n">starcore</span><span class="o">=</span> <span class="nc">StarCoreFactory</span><span class="o">.</span><span class="na">GetFactory</span><span class="o">();</span>
+        <span class="nc">StarServiceClass</span> <span class="nc">Service</span><span class="o">=</span><span class="n">starcore</span><span class="o">.</span><span class="na">_InitSimple</span><span class="o">(</span><span class="s">"test"</span><span class="o">,</span><span class="s">"123"</span><span class="o">,</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">);</span>
+        <span class="nc">SrvGroup</span> <span class="o">=</span> <span class="o">(</span><span class="nc">StarSrvGroupClass</span><span class="o">)</span><span class="nc">Service</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="s">"_ServiceGroup"</span><span class="o">);</span>
+        <span class="nc">Service</span><span class="o">.</span><span class="na">_CheckPassword</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+
+        <span class="n">starcore</span><span class="o">.</span><span class="na">_RegMsgCallBack_P</span><span class="o">(</span><span class="k">new</span> <span class="nc">StarMsgCallBackInterface</span><span class="o">(){</span>
+            <span class="kd">public</span> <span class="nc">Object</span> <span class="nf">Invoke</span><span class="o">(</span><span class="kt">int</span> <span class="nc">ServiceGroupID</span><span class="o">,</span> <span class="kt">int</span> <span class="n">uMes</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">wParam</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">lParam</span><span class="o">){</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_Getint</span><span class="o">(</span><span class="s">"MSG_DISPMSG"</span><span class="o">)</span> <span class="o">||</span> <span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_Getint</span><span class="o">(</span><span class="s">"MSG_DISPLUAMSG"</span><span class="o">)</span> <span class="o">||</span>
+                        <span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_Getint</span><span class="o">(</span><span class="s">"MSG_VSDISPMSG"</span><span class="o">)</span> <span class="o">||</span> <span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_Getint</span><span class="o">(</span><span class="s">"MSG_VSDISPLUAMSG"</span><span class="o">))</span>
+                <span class="o">{</span>
+                    <span class="nc">String</span> <span class="nc">Str</span><span class="o">;</span>
+                    <span class="nc">Str</span> <span class="o">=</span> <span class="o">(</span><span class="nc">String</span><span class="o">)</span><span class="n">wParam</span><span class="o">;</span>
+                    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">Str</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">});</span></code></pre></figure>
+
+<h3 id="2-initilize-ruby">2. Initilize ruby</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">        <span class="k">try</span><span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">getApplicationInfo</span><span class="o">().</span><span class="na">nativeLibraryDir</span><span class="o">+</span><span class="s">"/libruby.so"</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">catch</span><span class="o">(</span><span class="nc">UnsatisfiedLinkError</span> <span class="n">ex</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">ex</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="nc">SrvGroup</span><span class="o">.</span><span class="na">_InitRaw</span><span class="o">(</span><span class="s">"ruby"</span><span class="o">,</span><span class="nc">Service</span><span class="o">);</span>
+        <span class="nc">StarObjectClass</span> <span class="n">ruby</span> <span class="o">=</span> <span class="nc">Service</span><span class="o">.</span><span class="na">_ImportRawContext</span><span class="o">(</span><span class="s">"ruby"</span><span class="o">,</span><span class="s">""</span><span class="o">,</span><span class="kc">false</span><span class="o">,</span><span class="s">""</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">ruby</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="s">"LOAD_PATH"</span><span class="o">));</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">ruby</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="s">"File"</span><span class="o">));</span></code></pre></figure>
+
+<h3 id="3-set-ruby-libraries-searching-path">3. Set ruby libraries searching path</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">        <span class="nc">StarObjectClass</span> <span class="no">LOAD_PATH</span> <span class="o">=</span> <span class="o">(</span><span class="nc">StarObjectClass</span><span class="o">)</span><span class="n">ruby</span><span class="o">.</span><span class="na">_R</span><span class="o">(</span><span class="s">"LOAD_PATH"</span><span class="o">);</span>
+
+        <span class="no">LOAD_PATH</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"unshift"</span><span class="o">,</span> <span class="s">"/data/data/"</span><span class="o">+</span><span class="n">getPackageName</span><span class="o">()+</span><span class="s">"/files/lib/ruby/2.2.0"</span><span class="o">);</span>
+        <span class="no">LOAD_PATH</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"unshift"</span><span class="o">,</span> <span class="s">"/data/data/"</span><span class="o">+</span><span class="n">getPackageName</span><span class="o">()+</span><span class="s">"/files/armeabi-v7a/lib-dynload"</span><span class="o">);</span>
+        <span class="no">LOAD_PATH</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"unshift"</span><span class="o">,</span> <span class="s">"/data/data/"</span><span class="o">+</span><span class="n">getPackageName</span><span class="o">()+</span><span class="s">"/files"</span><span class="o">);</span>
+        <span class="no">LOAD_PATH</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"unshift"</span><span class="o">,</span> <span class="s">"/data/data/"</span><span class="o">+</span><span class="n">getPackageName</span><span class="o">()+</span><span class="s">"/files/kramdown-1.16.2/lib"</span><span class="o">);</span></code></pre></figure>
+
+<h3 id="4-call-kramdown">4. Call kramdown</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">        <span class="n">ruby</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"require"</span><span class="o">,</span><span class="s">"enc/encdb"</span><span class="o">);</span>  <span class="c1">//--else, will encoding error</span>
+        <span class="n">ruby</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"require"</span><span class="o">,</span><span class="s">"kramdown"</span><span class="o">);</span>
+        <span class="nc">StarObjectClass</span> <span class="nc">KramdownDocument</span> <span class="o">=</span> <span class="o">(</span><span class="nc">StarObjectClass</span><span class="o">)</span><span class="n">ruby</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"eval"</span><span class="o">,</span><span class="s">"Kramdown::Document"</span><span class="o">);</span>
+        <span class="nc">StarObjectClass</span> <span class="n">resobj</span> <span class="o">=</span> <span class="nc">KramdownDocument</span><span class="o">.</span><span class="na">_New</span><span class="o">(</span><span class="s">""</span><span class="o">,</span><span class="s">""</span><span class="o">,</span><span class="s">"# aaaaaa"</span><span class="o">);</span>
+        <span class="nc">Object</span> <span class="n">res</span> <span class="o">=</span> <span class="n">resobj</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"method_missing"</span><span class="o">,</span><span class="s">"to_html"</span><span class="o">);</span>     </code></pre></figure>
+
+<h1 align="left"><font color="#FF9900">Sample Download</font></h1>
+
+<p><a href="/datas/call_markdown_with_ruby_on_android.zip" title="call_markdown_with_ruby_on_android">call_markdown_with_ruby_on_android.zip</a></p>
+
+<h1 align="left"><font color="#FF9900">History</font></h1>
+
+:ET

@@ -1,0 +1,113 @@
+I"µ!<h3 id="the-example-shows-how-to-use-kramdown-to-convert-markdown-file-to-html-in-apps-developed-with-c-for-windows-desktop">The example shows how to use kramdown to convert markdown file to html in apps developed with c# for windows desktop.</h3>
+
+<head>
+    <link href="/assets/css/code.css" rel="stylesheet" type="text/css" />
+</head>
+
+<h1 align="left"><font color="#FF9900">Introduction</font></h1>
+
+<p>kramdown can convert markdown file to html, which is written in pure ruby.</p>
+
+<p>The example shows how to use kramdown to convert markdown file to html in apps developed with c# for windows desktop.</p>
+
+<h1 align="left"><font color="#FF9900">Background</font></h1>
+
+<p>This example is based on CLE. CLE supports windows platform, ruby language, and interaction between ruby and delphi.</p>
+
+<p>The sample is developed with virsual studio 2017, ruby 2.2(Installed with RubyInstaller), and kramdown-1.16.2.</p>
+
+<h3 id="1-install-cle">1. Install CLE</h3>
+
+<ul>
+  <li>
+    <p>Download and install CLE for win32</p>
+
+    <p><a href="https://github.com/srplab/starcore_for_windows" title="starcore_for_windows">starcore_for_windows</a></p>
+
+    <p><img src="/images/install_starcore_win32_2_5_2.png" alt="" width="320px" /></p>
+  </li>
+</ul>
+
+<h3 id="2-create-c-project">2. Create c# project</h3>
+
+<ul>
+  <li>
+    <p>create a windows classic desktop project</p>
+
+    <p><img src="/images/windows_csharp_create_project.png" alt="" width="320px" /></p>
+  </li>
+</ul>
+
+<h3 id="3-add-star_csharp-reference">3. Add Star_csharp reference</h3>
+
+<ul>
+  <li>
+    <p>Add star_csharp62 to the project</p>
+
+    <p><img src="/images/windows_csharp_add_star_csharp.png" alt="" width="320px" /></p>
+  </li>
+</ul>
+
+<h1 align="left"><font color="#FF9900">Using the code</font></h1>
+
+<h3 id="1-initialize-cle">1. Initialize CLE</h3>
+
+<ul>
+  <li>Using Star_csharp</li>
+</ul>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">Star_csharp</span><span class="p">;</span>
+    </code></pre></figure>
+
+<ul>
+  <li>Use the following code to initialize CLE</li>
+</ul>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-c#" data-lang="c#">    
+<span class="n">StarCoreFactory</span> <span class="n">starcore</span> <span class="p">=</span> <span class="n">StarCoreFactory</span><span class="p">.</span><span class="nf">GetFactory</span><span class="p">();</span>
+<span class="n">starcore</span><span class="p">.</span><span class="nf">_RegMsgCallBack_P</span><span class="p">((</span><span class="kt">int</span> <span class="n">ServiceGroupID</span><span class="p">,</span> <span class="kt">int</span> <span class="n">uMes</span><span class="p">,</span> <span class="n">Object</span> <span class="n">wParam</span><span class="p">,</span> <span class="n">Object</span> <span class="n">lParam</span><span class="p">)</span> <span class="p">=&gt;</span> 
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">uMes</span> <span class="p">==</span> <span class="n">starcore</span><span class="p">.</span><span class="nf">_Getint</span><span class="p">(</span><span class="s">"MSG_DISPMSG"</span><span class="p">)</span> <span class="p">||</span> <span class="n">uMes</span> <span class="p">==</span> <span class="n">starcore</span><span class="p">.</span><span class="nf">_Getint</span><span class="p">(</span><span class="s">"MSG_DISPLUAMSG"</span><span class="p">)</span> <span class="p">||</span> <span class="n">uMes</span> <span class="p">==</span> <span class="n">starcore</span><span class="p">.</span><span class="nf">_Getint</span><span class="p">(</span><span class="s">"MSG_VSDISPMSG"</span><span class="p">)</span> <span class="p">||</span> <span class="n">uMes</span> <span class="p">==</span> <span class="n">starcore</span><span class="p">.</span><span class="nf">_Getint</span><span class="p">(</span><span class="s">"MSG_VSDISPLUAMSG"</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="n">Debug</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">((</span><span class="n">String</span><span class="p">)</span><span class="n">wParam</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="k">null</span><span class="p">;</span>
+<span class="p">});</span>
+<span class="n">StarServiceClass</span> <span class="n">Service</span> <span class="p">=</span> <span class="n">starcore</span><span class="p">.</span><span class="nf">_InitSimple</span><span class="p">(</span><span class="s">"test"</span><span class="p">,</span> <span class="s">"123"</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
+<span class="n">StarSrvGroupClass</span> <span class="n">SrvGroup</span> <span class="p">=</span> <span class="p">(</span><span class="n">StarSrvGroupClass</span><span class="p">)</span><span class="n">Service</span><span class="p">.</span><span class="nf">_Get</span><span class="p">(</span><span class="s">"_ServiceGroup"</span><span class="p">);</span>
+<span class="n">Service</span><span class="p">.</span><span class="nf">_CheckPassword</span><span class="p">(</span><span class="k">false</span><span class="p">);</span></code></pre></figure>
+
+<h3 id="2-initialize-ruby-and-set-ruby-libraries-searching-path">2. Initialize ruby and set ruby libraries searching path</h3>
+
+<ul>
+  <li>kramdown-1.16.2 library path must be set to ruby before load.</li>
+</ul>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-c#" data-lang="c#"><span class="n">SrvGroup</span><span class="p">.</span><span class="nf">_InitRaw</span><span class="p">(</span><span class="s">"ruby"</span><span class="p">,</span> <span class="n">Service</span><span class="p">);</span>
+<span class="kt">dynamic</span> <span class="n">varruby</span> <span class="p">=</span> <span class="n">Service</span><span class="p">.</span><span class="nf">_ImportRawContext</span><span class="p">(</span><span class="s">"ruby"</span><span class="p">,</span> <span class="s">""</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="s">""</span><span class="p">);</span>
+
+<span class="kt">dynamic</span> <span class="n">LOAD_PATH</span> <span class="p">=</span> <span class="n">varruby</span><span class="p">.</span><span class="n">LOAD_PATH</span><span class="p">;</span>
+<span class="n">LOAD_PATH</span><span class="p">.</span><span class="nf">unshift</span><span class="p">(</span><span class="s">"C:\\Ruby22\\lib\\ruby\\gems\\2.2.0\\gems\\kramdown-1.16.2\\lib"</span><span class="p">);</span></code></pre></figure>
+
+<h3 id="3-call-kramdown">3. Call kramdown</h3>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-c#" data-lang="c#"><span class="n">varruby</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="s">"kramdown"</span><span class="p">);</span>
+<span class="kt">dynamic</span> <span class="n">KramdownDocument</span><span class="p">=</span> <span class="n">varruby</span><span class="p">.</span><span class="nf">eval</span><span class="p">(</span><span class="s">"Kramdown::Document"</span><span class="p">);</span>
+<span class="kt">dynamic</span> <span class="n">resobj</span> <span class="p">=</span> <span class="n">KramdownDocument</span><span class="p">.</span><span class="nf">_New</span><span class="p">(</span><span class="s">""</span><span class="p">,</span><span class="s">""</span><span class="p">,</span><span class="s">"# aaaaaa"</span><span class="p">);</span>
+
+<span class="kt">dynamic</span> <span class="n">Result</span>  <span class="p">=</span> <span class="n">resobj</span><span class="p">.</span><span class="nf">method_missing</span><span class="p">(</span><span class="s">"to_html"</span><span class="p">);</span>
+<span class="kt">string</span> <span class="n">str</span> <span class="p">=</span> <span class="n">Result</span> <span class="k">as</span> <span class="kt">string</span><span class="p">;</span></code></pre></figure>
+
+<h1 align="left"><font color="#FF9900">Sample Download</font></h1>
+
+<ul>
+  <li>
+    <p>download from here</p>
+
+    <p><a href="/datas/windows_csharp_call_ruby_kramdown.zip" title="windows_csharp_call_ruby_kramdown">windows_csharp_call_ruby_kramdown.zip</a></p>
+  </li>
+</ul>
+
+<h1 align="left"><font color="#FF9900">History</font></h1>
+
+:ET

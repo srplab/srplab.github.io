@@ -1,0 +1,234 @@
+I"q]<h3 id="this-example-shows-how-to-write-rust-extension-for-other-scripts-based-on-starcore_for_rust">This example shows how to write rust extension for other scripts based on starcore_for_rust.</h3>
+
+<h1 align="left"><font color="#FF9900">Background</font></h1>
+
+<p>This example shows how to write rust extension for other scripts based on starcore_for_rust.</p>
+
+<h3 id="1-install">1. Install</h3>
+
+<ul>
+  <li>
+    <p>For windows, python and <a href="https://github.com/srplab/starcore_for_windows">cle for win32</a> must be installed.</p>
+  </li>
+  <li>
+    <p>For linux, python and <a href="https://github.com/srplab/starcore_for_linux">cle for linux</a> must be installed.</p>
+  </li>
+  <li>
+    <p>Create package</p>
+
+    <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cargo new <span class="nt">--lib</span> rustsharelib
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Add dependencies to Cargo.toml</p>
+  </li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-rust" data-lang="rust"><span class="p">[</span><span class="n">package</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s">"rustsharelib"</span>
+<span class="n">version</span> <span class="o">=</span> <span class="s">"0.1.0"</span>
+<span class="n">authors</span> <span class="o">=</span> <span class="p">[</span><span class="s">"srplab &lt;srplab.cn@hotmail.com&gt;"</span><span class="p">]</span>
+
+<span class="p">[</span><span class="n">lib</span><span class="p">]</span>
+<span class="n">crate</span><span class="o">-</span><span class="k">type</span> <span class="o">=</span> <span class="p">[</span><span class="s">"cdylib"</span><span class="p">]</span>
+<span class="n">path</span> <span class="o">=</span> <span class="s">"src/lib.rs"</span>
+
+<span class="p">[</span><span class="n">dependencies</span><span class="p">]</span>
+<span class="n">starcore_for_rust</span> <span class="o">=</span> <span class="p">{</span><span class="n">git</span><span class="o">=</span><span class="s">"https://github.com/srplab/starcore_for_rust"</span><span class="p">,</span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s">"star-sharelib"</span><span class="p">]}</span>
+  </code></pre></figure>
+
+<h1 align="left"><font color="#FF9900">Create Extension</font></h1>
+
+<ul>
+  <li>
+    <p>Create rust extension is very simple.</p>
+
+    <p>Use macro “star_extension” to create extension body. In star_extension, create cle object, and define it’s function.</p>
+  </li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-rust" data-lang="rust"><span class="nd">#![allow(non_snake_case)]</span>
+<span class="nd">#![allow(unused_variables)]</span>
+
+<span class="nd">#[macro_use]</span> <span class="k">extern</span> <span class="n">crate</span> <span class="n">starcore_for_rust</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">starcore_for_rust</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">os</span><span class="p">::</span><span class="nn">raw</span><span class="p">::{</span><span class="nb">c_void</span><span class="p">};</span>
+
+<span class="nd">star_extension!</span><span class="p">(</span><span class="n">SrvGroup</span><span class="p">,</span><span class="n">Service</span> <span class="p">{</span>
+  <span class="cm">/*--create a new cle object, other script can find the object by it's name--*/</span>
+  <span class="k">let</span> <span class="n">obj</span> <span class="o">=</span> <span class="n">Service</span><span class="nf">.New</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="o">&amp;</span><span class="s">"RustObject"</span><span class="p">]);</span>
+  <span class="cm">/*--define function "PrintHello" of cle object--*/</span>
+  <span class="nd">star_fn!</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="s">"PrintHello"</span><span class="p">,</span><span class="n">CleGroup</span><span class="p">,</span><span class="n">CleService</span><span class="p">,</span><span class="n">CleObject</span><span class="p">,</span><span class="n">a</span><span class="p">:</span><span class="nb">String</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span><span class="nb">f64</span> <span class="p">{</span>
+    <span class="nd">println!</span><span class="p">(</span><span class="s">"########{:?}"</span><span class="p">,</span><span class="n">a</span><span class="p">);</span>
+    <span class="nd">println!</span><span class="p">(</span><span class="s">"########{:?}"</span><span class="p">,</span><span class="n">b</span><span class="p">);</span>
+    <span class="nd">star_ret!</span><span class="p">(</span><span class="nd">star_parapkg!</span><span class="p">(</span><span class="n">CleGroup</span><span class="p">,</span><span class="s">"return from go"</span><span class="p">,</span><span class="mf">345.4</span><span class="p">));</span>
+  <span class="p">});</span>     
+<span class="p">});</span>
+  </code></pre></figure>
+
+<ul>
+  <li>
+    <p>Build</p>
+
+    <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cargo build
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h1 align="left"><font color="#FF9900">Using Extension from Other Scripts</font></h1>
+
+<p>Using “DoFile” of Service Class to load the extension</p>
+
+<h3 id="1-python">1. python</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">libstarpy</span>
+<span class="n">Service</span><span class="o">=</span><span class="n">libstarpy</span><span class="o">.</span><span class="n">_InitSimple</span><span class="p">(</span><span class="s">"test"</span><span class="p">,</span><span class="s">"123"</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+<span class="n">SrvGroup</span> <span class="o">=</span> <span class="n">Service</span><span class="o">.</span><span class="n">_ServiceGroup</span><span class="p">;</span>
+<span class="n">Service</span><span class="o">.</span><span class="n">_CheckPassword</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">Service</span><span class="o">.</span><span class="n">_DoFile</span><span class="p">(</span><span class="s">""</span><span class="p">,</span><span class="s">"./target/debug/rustsharelib.dll"</span><span class="p">,</span><span class="s">""</span><span class="p">);</span>
+<span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Service</span><span class="o">.</span><span class="n">RustObject</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Service</span><span class="o">.</span><span class="n">RustObject</span><span class="o">.</span><span class="n">PrintHello</span><span class="p">(</span><span class="s">"------------1"</span><span class="p">,</span><span class="mf">234.56</span><span class="p">))</span>
+
+<span class="n">SrvGroup</span><span class="o">.</span><span class="n">_ClearService</span><span class="p">()</span>
+<span class="n">libstarpy</span><span class="o">.</span><span class="n">_ModuleExit</span><span class="p">()</span></code></pre></figure>
+
+<p>Run</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PS E:<span class="se">\r</span>ustsharelib.test<span class="se">\r</span>ustsharelib&gt; python call_rust.py
+<span class="o">(</span>True, <span class="s1">''</span><span class="o">)</span>
+RustObject
+<span class="c">########"------------1"</span>
+<span class="c">########234.56</span>
+parapkg
+</code></pre></div></div>
+
+<h3 id="2-ruby">2. ruby</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-ruby" data-lang="ruby"><span class="k">if</span> <span class="p">(</span><span class="k">defined?</span> <span class="no">Libstar_ruby</span><span class="p">)</span> <span class="o">==</span> <span class="kp">nil</span>
+   <span class="nb">require</span> <span class="s2">"C:</span><span class="se">\\</span><span class="s2">srplab</span><span class="se">\\</span><span class="s2">libs64</span><span class="se">\\</span><span class="s2">libstar_ruby.so"</span>
+<span class="k">end</span>  
+<span class="vg">$Service</span><span class="o">=</span><span class="vg">$starruby</span><span class="p">.</span><span class="nf">_InitSimple</span><span class="p">(</span><span class="s2">"test"</span><span class="p">,</span><span class="s2">"123"</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="kp">nil</span><span class="p">);</span>
+<span class="vg">$SrvGroup</span> <span class="o">=</span> <span class="vg">$Service</span><span class="p">.</span><span class="nf">_ServiceGroup</span><span class="p">;</span>
+<span class="vg">$Service</span><span class="p">.</span><span class="nf">_CheckPassword</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="vg">$Service</span><span class="p">.</span><span class="nf">_DoFile</span><span class="p">(</span><span class="s2">""</span><span class="p">,</span><span class="vg">$SrvGroup</span><span class="p">.</span><span class="nf">_GetCurrentPath</span><span class="p">()</span> <span class="o">+</span> <span class="s2">"/target/debug/rustsharelib.dll"</span><span class="p">,</span><span class="s2">""</span><span class="p">);</span>
+<span class="nb">puts</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="nb">puts</span><span class="p">(</span><span class="vg">$Service</span><span class="o">.</span><span class="no">RustObject</span><span class="p">)</span>
+<span class="nb">puts</span><span class="p">(</span><span class="vg">$Service</span><span class="o">.</span><span class="no">RustObject</span><span class="o">.</span><span class="no">PrintHello</span><span class="p">(</span><span class="s2">"------------1"</span><span class="p">,</span><span class="mf">234.56</span><span class="p">))</span>
+
+<span class="vg">$SrvGroup</span><span class="p">.</span><span class="nf">_ClearService</span><span class="p">()</span>
+<span class="vg">$starruby</span><span class="p">.</span><span class="nf">_ModuleExit</span><span class="p">()</span>
+
+<span class="c1">#[warn(1):(ruby:32745):tm(11:40:26)]can not load ruby core share library[C:\Ruby25-x64\bin\x64-msvcrt-ruby250.dll][error code = 126</span>
+<span class="c1">#add "C:\Ruby25-x64\bin\ruby_builtin_dlls" path for environment</span></code></pre></figure>
+
+<p>Run</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PS E:<span class="se">\r</span>ustsharelib.test<span class="se">\r</span>ustsharelib&gt; ruby call_rust.rb
+call_rust.rb:12: warning: encountered <span class="se">\r</span> <span class="k">in </span>middle of line, treated as a mere space
+<span class="nb">true
+
+</span>RustObject
+<span class="c">########"------------1"</span>
+<span class="c">########234.56</span>
+parapkg
+</code></pre></div></div>
+
+<h3 id="3-java">3. java</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">com.srplab.www.starcore.*</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">call_rust</span><span class="o">{</span> 
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">){</span>
+    <span class="nc">StarCoreFactory</span> <span class="n">starcore</span><span class="o">=</span> <span class="nc">StarCoreFactory</span><span class="o">.</span><span class="na">GetFactory</span><span class="o">();</span>
+    <span class="nc">StarServiceClass</span> <span class="nc">Service</span><span class="o">=</span><span class="n">starcore</span><span class="o">.</span><span class="na">_InitSimple</span><span class="o">(</span><span class="s">"test"</span><span class="o">,</span><span class="s">"123"</span><span class="o">,</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">);</span>
+    <span class="nc">StarSrvGroupClass</span> <span class="nc">SrvGroup</span> <span class="o">=</span> <span class="o">(</span><span class="nc">StarSrvGroupClass</span><span class="o">)</span><span class="nc">Service</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="s">"_ServiceGroup"</span><span class="o">);</span>
+    <span class="nc">Service</span><span class="o">.</span><span class="na">_CheckPassword</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+
+    <span class="nc">Object</span> <span class="n">result</span> <span class="o">=</span> <span class="nc">Service</span><span class="o">.</span><span class="na">_DoFile</span><span class="o">(</span><span class="s">""</span><span class="o">,</span><span class="nc">SrvGroup</span><span class="o">.</span><span class="na">_GetCurrentPath</span><span class="o">()</span> <span class="o">+</span> <span class="s">"/target/debug/rustsharelib.dll"</span><span class="o">,</span><span class="s">""</span><span class="o">);</span>
+    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">result</span><span class="o">);</span>
+    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">Service</span><span class="o">.</span><span class="na">_GetObject</span><span class="o">(</span><span class="s">"RustObject"</span><span class="o">));</span>
+    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">Service</span><span class="o">.</span><span class="na">_GetObject</span><span class="o">(</span><span class="s">"RustObject"</span><span class="o">).</span><span class="na">_Call</span><span class="o">(</span><span class="s">"PrintHello"</span><span class="o">,</span><span class="s">"------------1"</span><span class="o">,</span><span class="mf">234.56</span><span class="o">));</span>
+		
+    <span class="nc">SrvGroup</span><span class="o">.</span><span class="na">_ClearService</span><span class="o">();</span>
+    <span class="n">starcore</span><span class="o">.</span><span class="na">_ModuleExit</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>		</code></pre></figure>
+
+<p>Run</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>javac <span class="nt">-classpath</span> .<span class="p">;</span>c:<span class="se">\s</span>rplab<span class="se">\l</span>ibs64<span class="se">\s</span>tarcore.jar call_rust.java
+java <span class="nt">-classpath</span> .<span class="p">;</span>c:<span class="se">\s</span>rplab<span class="se">\l</span>ibs64<span class="se">\s</span>tarcore.jar call_rust
+<span class="o">[</span>Ljava.lang.Object<span class="p">;</span>@1b28cdfa
+RustObject
+<span class="c">########"------------1"</span>
+<span class="c">########234.56</span>
+parapkg
+</code></pre></div></div>
+
+<h3 id="4-c">4. c#</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-c#" data-lang="c#"><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Linq</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Text</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Star_csharp</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">call_rust</span>
+<span class="p">{</span>
+    <span class="k">class</span> <span class="nc">Program</span>
+    <span class="p">{</span>
+        <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">StarCoreFactory</span> <span class="n">starcore</span><span class="p">=</span> <span class="n">StarCoreFactory</span><span class="p">.</span><span class="nf">GetFactory</span><span class="p">();</span>
+            <span class="n">StarServiceClass</span> <span class="n">Service</span><span class="p">=</span><span class="n">starcore</span><span class="p">.</span><span class="nf">_InitSimple</span><span class="p">(</span><span class="s">"test"</span><span class="p">,</span><span class="s">"123"</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">);</span>
+            <span class="n">StarSrvGroupClass</span> <span class="n">SrvGroup</span> <span class="p">=</span> <span class="p">(</span><span class="n">StarSrvGroupClass</span><span class="p">)</span><span class="n">Service</span><span class="p">.</span><span class="nf">_Get</span><span class="p">(</span><span class="s">"_ServiceGroup"</span><span class="p">);</span>
+            <span class="n">Service</span><span class="p">.</span><span class="nf">_CheckPassword</span><span class="p">(</span><span class="k">false</span><span class="p">);</span>
+
+            <span class="kt">object</span> <span class="n">result</span> <span class="p">=</span> <span class="n">Service</span><span class="p">.</span><span class="nf">_DoFile</span><span class="p">(</span><span class="s">""</span><span class="p">,</span><span class="n">SrvGroup</span><span class="p">.</span><span class="nf">_GetCurrentPath</span><span class="p">()</span> <span class="p">+</span> <span class="s">"/target/debug/rustsharelib.dll"</span><span class="p">,</span><span class="s">""</span><span class="p">);</span>
+            <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+            <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">Service</span><span class="p">.</span><span class="nf">_GetObject</span><span class="p">(</span><span class="s">"RustObject"</span><span class="p">));</span>
+            <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">Service</span><span class="p">.</span><span class="nf">_GetObject</span><span class="p">(</span><span class="s">"RustObject"</span><span class="p">).</span><span class="nf">_Call</span><span class="p">(</span><span class="s">"PrintHello"</span><span class="p">,</span><span class="s">"------------1"</span><span class="p">,</span><span class="m">234.56</span><span class="p">));</span>
+		
+            <span class="n">SrvGroup</span><span class="p">.</span><span class="nf">_ClearService</span><span class="p">();</span>
+            <span class="n">starcore</span><span class="p">.</span><span class="nf">_ModuleExit</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>		</code></pre></figure>
+
+<p>Run</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>csc /reference:c:<span class="se">\s</span>rplab<span class="se">\l</span>ibs64<span class="se">\s</span>tar_csharp462.dll /platform:x64 call_rust.cs
+</code></pre></div></div>
+
+<h3 id="5-go">5. go</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-go" data-lang="go"><span class="c">// test project main.go</span>
+<span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"fmt"</span>
+	<span class="s">"github.com/srplab/starcore_for_go/stargo"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">Service</span> <span class="o">:=</span> <span class="n">stargo</span><span class="o">.</span><span class="n">InitSimple</span><span class="p">(</span><span class="s">"test"</span><span class="p">,</span> <span class="s">"123"</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">)</span>
+	<span class="n">SrvGroup</span> <span class="o">:=</span> <span class="n">Service</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="s">"_ServiceGroup"</span><span class="p">)</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">stargo</span><span class="o">.</span><span class="n">StarSrvGroup</span><span class="p">)</span>
+	<span class="n">Service</span><span class="o">.</span><span class="n">CheckPassword</span><span class="p">(</span><span class="no">false</span><span class="p">)</span>
+
+	<span class="n">result</span> <span class="o">:=</span> <span class="n">Service</span><span class="o">.</span><span class="n">DoFile</span><span class="p">(</span><span class="s">""</span><span class="p">,</span><span class="n">SrvGroup</span><span class="o">.</span><span class="n">GetCurrentPath</span><span class="p">()</span> <span class="o">+</span> <span class="s">"/target/debug/rustsharelib.dll"</span><span class="p">,</span><span class="s">""</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">Service</span><span class="o">.</span><span class="n">GetObject</span><span class="p">(</span><span class="s">"RustObject"</span><span class="p">));</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">Service</span><span class="o">.</span><span class="n">GetObject</span><span class="p">(</span><span class="s">"RustObject"</span><span class="p">)</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="s">"PrintHello"</span><span class="p">,</span><span class="s">"------------1"</span><span class="p">,</span><span class="m">234.56</span><span class="p">));</span>
+
+	<span class="n">SrvGroup</span><span class="o">.</span><span class="n">ClearService</span><span class="p">();</span>
+	<span class="n">stargo</span><span class="o">.</span><span class="n">ModuleExit</span><span class="p">();</span>
+<span class="p">}</span></code></pre></figure>
+
+<h1 align="left"><font color="#FF9900">Sample Download</font></h1>
+
+<p><a href="/datas/rust_extension_for_other_scripts.zip" title="rust_extension_for_other_scripts">rust_extension_for_other_scripts.zip</a></p>
+
+:ET

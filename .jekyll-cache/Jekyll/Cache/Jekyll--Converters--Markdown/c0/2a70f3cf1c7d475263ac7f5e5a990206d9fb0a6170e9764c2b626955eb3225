@@ -1,0 +1,175 @@
+I"6K<h3 id="this-example-shows-how-to-write-go-extension-for-android-based-on-starcore_for_go">This example shows how to write go extension for android based on starcore_for_go.</h3>
+
+<h1 align="left"><font color="#FF9900">Background</font></h1>
+
+<p>This example shows how to write go extension for android based on starcore_for_go.</p>
+
+<h3 id="1-install">1. Install</h3>
+
+<ul>
+  <li>Using Ubuntu, and <a href="https://github.com/srplab/starcore_for_android">cle for android</a> should download and uncompressed.</li>
+</ul>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>go get github.com/srplab/starcore_for_go/stargo
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <p>Create go extension is simple.</p>
+
+    <p>Create go source file main.go, define “init” function.
+Register CallBack function “RegScriptInitCallBack_P”, in this callback function, create cle object and define it’s function</p>
+  </li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-go" data-lang="go"><span class="c">// main</span>
+<span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"fmt"</span>
+
+	<span class="s">"github.com/srplab/starcore_for_go/stargo"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"Hello World!"</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">init</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">stargo</span><span class="o">.</span><span class="n">RegAttachRawContextCallBack_P</span><span class="p">(</span><span class="k">func</span><span class="p">(</span><span class="n">ContextName</span> <span class="kt">string</span><span class="p">)</span> <span class="k">interface</span><span class="p">{}</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="n">ContextName</span> <span class="o">==</span> <span class="s">"gofunc"</span> <span class="p">{</span>
+			<span class="k">return</span> <span class="k">func</span><span class="p">(</span><span class="n">v1</span> <span class="kt">string</span><span class="p">,</span> <span class="n">v2</span> <span class="kt">float32</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+				<span class="n">stargo</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span>
+				<span class="n">stargo</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span>
+				<span class="k">return</span> <span class="s">"hello fro go"</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+		<span class="k">return</span> <span class="no">nil</span>
+	<span class="p">})</span>
+
+	<span class="n">stargo</span><span class="o">.</span><span class="n">RegScriptTermCallBack_P</span><span class="p">(</span><span class="k">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="n">stargo</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"go script engine exit..."</span><span class="p">)</span>
+	<span class="p">})</span>
+
+	<span class="n">stargo</span><span class="o">.</span><span class="n">RegScriptInitCallBack_P</span><span class="p">(</span><span class="k">func</span><span class="p">(</span><span class="n">SrvGroup</span> <span class="o">*</span><span class="n">stargo</span><span class="o">.</span><span class="n">StarSrvGroup</span><span class="p">,</span> <span class="n">Service</span> <span class="o">*</span><span class="n">stargo</span><span class="o">.</span><span class="n">StarService</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">stargo</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"go script engine init..."</span><span class="p">)</span>
+
+		<span class="c">/*--GoObject can be called from other script */</span>
+		<span class="n">s</span> <span class="o">:=</span> <span class="n">Service</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="s">"GoObject"</span><span class="p">)</span>
+		<span class="n">s</span><span class="o">.</span><span class="n">RegScriptProc_P</span><span class="p">(</span><span class="s">"PrintHello"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">CleGroup</span> <span class="o">*</span><span class="n">stargo</span><span class="o">.</span><span class="n">StarSrvGroup</span><span class="p">,</span> <span class="n">CleService</span> <span class="o">*</span><span class="n">stargo</span><span class="o">.</span><span class="n">StarService</span><span class="p">,</span> <span class="n">CleObject</span> <span class="o">*</span><span class="n">stargo</span><span class="o">.</span><span class="n">StarObject</span><span class="p">,</span> <span class="n">Paras</span> <span class="p">[]</span><span class="k">interface</span><span class="p">{})</span> <span class="k">interface</span><span class="p">{}</span> <span class="p">{</span>
+			<span class="n">stargo</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">Paras</span><span class="p">)</span>
+			<span class="k">return</span> <span class="p">[]</span><span class="k">interface</span><span class="p">{}{</span><span class="s">"return from go"</span><span class="p">,</span> <span class="m">345.4</span><span class="p">}</span>
+		<span class="p">})</span>
+	<span class="p">})</span>
+<span class="p">}</span>
+  </code></pre></figure>
+
+<ul>
+  <li>
+    <p>Build</p>
+
+    <p>Using NDK, create toolchain, and build.sh as follow,</p>
+
+    <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>build.sh
+  
+<span class="nb">export </span><span class="nv">NDK_TOOLCHAIN</span><span class="o">=</span>/home/xxx/Desktop/android-18-toolchain
+<span class="nb">export </span><span class="nv">CC</span><span class="o">=</span><span class="nv">$NDK_TOOLCHAIN</span>/bin/arm-linux-androideabi-gcc
+<span class="nb">export </span><span class="nv">GOOS</span><span class="o">=</span>android
+<span class="nb">export </span><span class="nv">GOARCH</span><span class="o">=</span>arm
+<span class="nb">export </span><span class="nv">GOARM</span><span class="o">=</span>7
+<span class="nb">export </span><span class="nv">CGO_ENABLED</span><span class="o">=</span>1
+
+<span class="nv">GO</span><span class="o">=</span><span class="s2">"</span><span class="nv">$GOROOT</span><span class="s2">/bin/go"</span>
+
+<span class="nv">$GO</span> build <span class="nt">-buildmode</span><span class="o">=</span>c-shared <span class="nt">-o</span> libgosharelib.so
+  
+<span class="nb">chmod </span>0777 build.sh
+./build.sh
+</code></pre></div>    </div>
+
+    <p>The share library “libgosharelib.so” will be generated.</p>
+
+    <p><img src="/images/go_extension_for_android_pic1.png" alt="" width="320px" /></p>
+  </li>
+</ul>
+
+<h1 align="left"><font color="#FF9900">Using Extension in Android App</font></h1>
+
+<p>Using “DoFile” of Service Class to load the extension</p>
+
+<h3 id="1-create-project-add-cle-and-librustsharelibso">1. Create Project, Add CLE and librustsharelib.so</h3>
+
+<p><img src="/images/go_extension_for_android_pic2.png" alt="" width="320px" /></p>
+
+<h3 id="2-the-java-code">2. The Java Code</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">example</span><span class="o">.</span><span class="na">srplab</span><span class="o">.</span><span class="na">testgosharelib</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">android.support.v7.app.AppCompatActivity</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.os.Bundle</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.srplab.www.starcore.*</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainActivity</span> <span class="kd">extends</span> <span class="nc">AppCompatActivity</span> <span class="o">{</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="nc">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+        <span class="n">setContentView</span><span class="o">(</span><span class="no">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">activity_main</span><span class="o">);</span>
+
+        <span class="cm">/*----init starcore----*/</span>
+        <span class="nc">StarCoreFactoryPath</span><span class="o">.</span><span class="na">StarCoreCoreLibraryPath</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">getApplicationInfo</span><span class="o">().</span><span class="na">nativeLibraryDir</span><span class="o">;</span>
+        <span class="nc">StarCoreFactoryPath</span><span class="o">.</span><span class="na">StarCoreShareLibraryPath</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">getApplicationInfo</span><span class="o">().</span><span class="na">nativeLibraryDir</span><span class="o">;</span>
+        <span class="nc">StarCoreFactoryPath</span><span class="o">.</span><span class="na">StarCoreOperationPath</span> <span class="o">=</span> <span class="s">"/data/data/"</span><span class="o">+</span><span class="n">getPackageName</span><span class="o">()+</span><span class="s">"/files"</span><span class="o">;</span>
+
+        <span class="kd">final</span> <span class="nc">StarCoreFactory</span> <span class="n">starcore</span><span class="o">=</span> <span class="nc">StarCoreFactory</span><span class="o">.</span><span class="na">GetFactory</span><span class="o">();</span>
+        <span class="nc">StarServiceClass</span> <span class="nc">Service</span><span class="o">=</span><span class="n">starcore</span><span class="o">.</span><span class="na">_InitSimple</span><span class="o">(</span><span class="s">"test"</span><span class="o">,</span><span class="s">"123"</span><span class="o">,</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">);</span>
+        <span class="n">starcore</span><span class="o">.</span><span class="na">_RegMsgCallBack_P</span><span class="o">(</span><span class="k">new</span> <span class="nc">StarMsgCallBackInterface</span><span class="o">()</span> <span class="o">{</span>
+            <span class="kd">public</span> <span class="nc">Object</span> <span class="nf">Invoke</span><span class="o">(</span><span class="kt">int</span> <span class="nc">ServiceGroupID</span><span class="o">,</span> <span class="kt">int</span> <span class="n">uMes</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">wParam</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">lParam</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_GetInt</span><span class="o">(</span><span class="s">"MSG_VSDISPMSG"</span><span class="o">)</span> <span class="o">||</span> <span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_GetInt</span><span class="o">(</span><span class="s">"MSG_VSDISPLUAMSG"</span><span class="o">))</span> <span class="o">{</span>
+                    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">((</span><span class="nc">String</span><span class="o">)</span> <span class="n">wParam</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_GetInt</span><span class="o">(</span><span class="s">"MSG_DISPMSG"</span><span class="o">)</span> <span class="o">||</span> <span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_GetInt</span><span class="o">(</span><span class="s">"MSG_DISPLUAMSG"</span><span class="o">))</span> <span class="o">{</span>
+                    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"++++++++++++++++"</span> <span class="o">+</span> <span class="o">(</span><span class="nc">String</span><span class="o">)</span> <span class="n">wParam</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">});</span>
+        <span class="nc">StarSrvGroupClass</span> <span class="nc">SrvGroup</span> <span class="o">=</span> <span class="o">(</span><span class="nc">StarSrvGroupClass</span><span class="o">)</span><span class="nc">Service</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="s">"_ServiceGroup"</span><span class="o">);</span>
+        <span class="nc">Service</span><span class="o">.</span><span class="na">_CheckPassword</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+
+        <span class="nc">Object</span><span class="o">[]</span> <span class="n">result</span> <span class="o">=</span> <span class="nc">Service</span><span class="o">.</span><span class="na">_DoFile</span><span class="o">(</span><span class="s">""</span><span class="o">,</span><span class="k">this</span><span class="o">.</span><span class="na">getApplicationInfo</span><span class="o">().</span><span class="na">nativeLibraryDir</span><span class="o">+</span><span class="s">"/libgosharelib.so"</span><span class="o">,</span><span class="s">""</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">result</span><span class="o">);</span>
+
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">Service</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="s">"GoObject"</span><span class="o">));</span>
+        <span class="nc">StarObjectClass</span> <span class="nc">GoObject</span> <span class="o">=</span> <span class="o">(</span><span class="nc">StarObjectClass</span><span class="o">)</span><span class="nc">Service</span><span class="o">.</span><span class="na">_GetObject</span><span class="o">(</span><span class="s">"GoObject"</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">GoObject</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">GoObject</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"PrintHello"</span><span class="o">,</span><span class="s">"------------1"</span><span class="o">,</span><span class="mf">234.56</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></figure>
+
+<p>Run</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>05-12 09:51:31.369 3277-3277/com.example.srplab.testgosharelib I/skeletonproc_module,31657: create service group[0], free core version[2.5.2.259]
+05-12 09:51:31.370 3277-3277/com.example.srplab.testgosharelib I/skeletonproc_module,31661: <span class="nb">install date</span><span class="o">[</span>2018/5/12],please register starcore <span class="o">[</span>http://www.srplab.com]
+05-12 09:51:31.370 3277-3277/com.example.srplab.testgosharelib I/skeletonproc_module,31700: lua engine[Lua 5.3.4  Copyright <span class="o">(</span>C<span class="o">)</span> 1994-2017 Lua.org, PUC-Rio]
+05-12 09:51:31.398 3277-3277/com.example.srplab.testgosharelib I/skeletonproc_module,1582: create service success[test]
+05-12 09:51:35.219 3277-3277/com.example.srplab.testgosharelib I/System.out: ++++++++++++++++[go script engine init...]
+05-12 09:51:35.222 3277-3277/com.example.srplab.testgosharelib I/System.out: ++++++++++++++++
+05-12 09:51:35.223 3277-3277/com.example.srplab.testgosharelib I/go,0: <span class="o">[</span>go script engine init...]
+05-12 09:51:35.225 3277-3277/com.example.srplab.testgosharelib I/System.out: load share library <span class="o">[</span>/data/app/com.example.srplab.testgosharelib-a5bAOE5HeLMLfpvLgEd8eQ<span class="o">==</span>/lib/arm/libgosharelib.so]
+05-12 09:51:35.226 3277-3277/com.example.srplab.testgosharelib I/skeletonproc_module,17372: load share library <span class="o">[</span>/data/app/com.example.srplab.testgosharelib-a5bAOE5HeLMLfpvLgEd8eQ<span class="o">==</span>/lib/arm/libgosharelib.so]
+05-12 09:51:35.969 3277-3277/com.example.srplab.testgosharelib I/System.out: <span class="o">[</span>Ljava.lang.Object<span class="p">;</span>@1a35e8
+05-12 09:51:36.973 3277-3277/com.example.srplab.testgosharelib I/System.out: GoObject
+05-12 09:51:38.543 3277-3277/com.example.srplab.testgosharelib I/System.out: GoObject
+05-12 09:51:39.123 3277-3277/com.example.srplab.testgosharelib I/System.out: ++++++++++++++++[[------------1 234.56]]
+05-12 09:51:39.130 3277-3277/com.example.srplab.testgosharelib I/System.out: ++++++++++++++++
+05-12 09:51:39.131 3277-3277/com.example.srplab.testgosharelib I/go,0: <span class="o">[[</span><span class="nt">------------1</span> 234.56]]
+05-12 09:51:39.140 3277-3277/com.example.srplab.testgosharelib I/System.out: parapkg
+</code></pre></div></div>
+
+<h1 align="left"><font color="#FF9900">Sample Download</font></h1>
+
+<p><a href="/datas/go_extension_for_android.zip" title="go_extension_for_android">go_extension_for_android.zip</a></p>
+
+:ET

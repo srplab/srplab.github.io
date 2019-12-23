@@ -1,0 +1,179 @@
+I"�G<h3 id="this-example-shows-how-to-use-starcore_for_go-which-enable-go-language-to-call-python">This example shows how to use starcore_for_go, which enable go language to call python.</h3>
+
+<h1 align="left"><font color="#FF9900">Background</font></h1>
+
+<p>This example shows how to use starcore_for_go, which enable go language to call python, including calling python functions, creating instances of python classes, getting and setting Python variables, capturing python printouts, and setting python callbacks, etc.</p>
+
+<h3 id="1-install">1. Install</h3>
+
+<ul>
+  <li>
+    <p>For windows, python and <a href="https://github.com/srplab/starcore_for_windows">cle for win32</a> must be installed.</p>
+  </li>
+  <li>
+    <p>For linux, python and <a href="https://github.com/srplab/starcore_for_linux">cle for linux</a> must be installed.</p>
+  </li>
+  <li>
+    <p>Install starfore_for_go</p>
+
+    <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>go get github.com/srplab/starcore_for_go/stargo
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h1 align="left"><font color="#FF9900">Using the code</font></h1>
+
+<h3 id="1-init-cle-using-starcore_for_go">1. Init cle using starcore_for_go</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-go" data-lang="go">    <span class="k">import</span> <span class="p">(</span>
+      	<span class="s">"fmt"</span>
+       	<span class="s">"github.com/srplab/starcore_for_go/stargo"</span>
+    <span class="p">)</span>
+
+    <span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+       	<span class="n">Service</span> <span class="o">:=</span> <span class="n">stargo</span><span class="o">.</span><span class="n">InitSimple</span><span class="p">(</span><span class="s">"test"</span><span class="p">,</span> <span class="s">"123"</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">)</span>
+       	<span class="n">SrvGroup</span> <span class="o">:=</span> <span class="n">Service</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="s">"_ServiceGroup"</span><span class="p">)</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">stargo</span><span class="o">.</span><span class="n">StarSrvGroup</span><span class="p">)</span>
+       	<span class="n">Service</span><span class="o">.</span><span class="n">CheckPassword</span><span class="p">(</span><span class="no">false</span><span class="p">)</span>
+    <span class="p">}</span>
+  </code></pre></figure>
+
+<h3 id="2-loading-and-initializing-python">2. Loading and initializing python</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-go" data-lang="go">    <span class="n">SrvGroup</span><span class="o">.</span><span class="n">InitRaw</span><span class="p">(</span><span class="s">"python"</span><span class="p">,</span> <span class="n">Service</span><span class="p">)</span></code></pre></figure>
+
+<ul>
+  <li>
+    <p>Load python2.7 by default, you can use python35, python36, etc. to load different versions</p>
+  </li>
+  <li>
+    <p>Get python global context, with it, app can get or set python global variables, classes or functions.</p>
+  </li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-go" data-lang="go">    <span class="n">python</span> <span class="o">:=</span> <span class="n">Service</span><span class="o">.</span><span class="n">ImportRawContext</span><span class="p">(</span><span class="s">"python"</span><span class="p">,</span> <span class="s">""</span><span class="p">,</span> <span class="no">false</span><span class="p">,</span> <span class="s">""</span><span class="p">)</span></code></pre></figure>
+
+<h3 id="3-set-callbacks-to-capture-output-from-python">3. Set callbacks to capture output from python</h3>
+
+<ul>
+  <li>Callback function</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-go" data-lang="go">    <span class="k">func</span> <span class="n">MsgCallBack</span><span class="p">(</span><span class="n">ServiceGroupID</span> <span class="kt">uint32</span><span class="p">,</span> <span class="n">uMsg</span> <span class="kt">uint32</span><span class="p">,</span> <span class="n">wParam</span> <span class="k">interface</span><span class="p">{},</span> <span class="n">lParam</span> <span class="k">interface</span><span class="p">{})</span> <span class="p">(</span><span class="n">IsProcessed</span> <span class="kt">bool</span><span class="p">,</span> <span class="n">Result</span> <span class="k">interface</span><span class="p">{})</span> <span class="p">{</span>
+    	<span class="k">if</span> <span class="n">uMsg</span> <span class="o">==</span> <span class="n">stargo</span><span class="o">.</span><span class="n">MSG_VSDISPMSG</span> <span class="o">||</span> <span class="n">uMsg</span> <span class="o">==</span> <span class="n">stargo</span><span class="o">.</span><span class="n">MSG_VSDISPLUAMSG</span> <span class="o">||</span> <span class="n">uMsg</span> <span class="o">==</span> <span class="n">stargo</span><span class="o">.</span><span class="n">MSG_DISPMSG</span> <span class="o">||</span> <span class="n">uMsg</span> <span class="o">==</span> <span class="n">stargo</span><span class="o">.</span><span class="n">MSG_DISPLUAMSG</span> <span class="p">{</span>
+		    <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">wParam</span><span class="p">)</span>
+    	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		    <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">ServiceGroupID</span><span class="p">,</span> <span class="n">uMsg</span><span class="p">,</span> <span class="n">wParam</span><span class="p">,</span> <span class="n">lParam</span><span class="p">)</span>
+    	<span class="p">}</span>
+    	<span class="k">return</span> <span class="no">false</span><span class="p">,</span> <span class="m">0</span>
+    <span class="p">}</span></code></pre></figure>
+
+<ul>
+  <li>Set Callback function</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-go" data-lang="go">    <span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+    	<span class="n">Service</span> <span class="o">:=</span> <span class="n">stargo</span><span class="o">.</span><span class="n">InitSimple</span><span class="p">(</span><span class="s">"test"</span><span class="p">,</span> <span class="s">"123"</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">)</span>
+    	<span class="n">SrvGroup</span> <span class="o">:=</span> <span class="n">Service</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="s">"_ServiceGroup"</span><span class="p">)</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">stargo</span><span class="o">.</span><span class="n">StarSrvGroup</span><span class="p">)</span>
+    	<span class="n">Service</span><span class="o">.</span><span class="n">CheckPassword</span><span class="p">(</span><span class="no">false</span><span class="p">)</span>
+
+    	<span class="n">stargo</span><span class="o">.</span><span class="n">RegMsgCallBack_P</span><span class="p">(</span><span class="n">MsgCallBack</span><span class="p">)</span>
+
+        <span class="o">...</span>
+    <span class="p">}</span></code></pre></figure>
+
+<h3 id="4-interoperation-with-python">4. Interoperation with python</h3>
+
+<ul>
+  <li>Run python file</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-go" data-lang="go">    <span class="n">Service</span><span class="o">.</span><span class="n">DoFile</span><span class="p">(</span><span class="s">"python"</span><span class="p">,</span> <span class="s">"testpy.py"</span><span class="p">,</span> <span class="s">""</span><span class="p">)</span></code></pre></figure>
+
+<ul>
+  <li>Get python global variable</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-go" data-lang="go">    <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">python</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="s">"g1"</span><span class="p">))</span></code></pre></figure>
+
+<ul>
+  <li>Python class related operations</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-go" data-lang="go">    <span class="c">//Get python class</span>
+    <span class="n">Multiply</span> <span class="o">:=</span> <span class="n">Service</span><span class="o">.</span><span class="n">ImportRawContext</span><span class="p">(</span><span class="s">"python"</span><span class="p">,</span> <span class="s">"Multiply"</span><span class="p">,</span> <span class="no">true</span><span class="p">,</span> <span class="s">""</span><span class="p">)</span>
+    <span class="c">//Create instance of python class</span>
+    <span class="n">multiply</span> <span class="o">:=</span> <span class="n">Multiply</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="s">""</span><span class="p">,</span> <span class="s">""</span><span class="p">,</span> <span class="m">33</span><span class="p">,</span> <span class="m">44</span><span class="p">)</span>
+    <span class="c">//Invoke function of python instance</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"instance multiply = %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">multiply</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="s">"multiply"</span><span class="p">,</span> <span class="m">11</span><span class="p">,</span> <span class="m">22</span><span class="p">))</span></code></pre></figure>
+
+<h3 id="5-set-callback-to-python">5. Set callback to python</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-go" data-lang="go">    <span class="n">Service</span><span class="o">.</span><span class="n">DoFile</span><span class="p">(</span><span class="s">"python"</span><span class="p">,</span> <span class="s">" testcallback.py"</span><span class="p">,</span> <span class="s">""</span><span class="p">)</span>
+
+    <span class="n">CallBackObj</span> <span class="o">:=</span> <span class="n">Service</span><span class="o">.</span><span class="n">New</span><span class="p">()</span>
+    <span class="n">python</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="s">"CallBackObj"</span><span class="p">,</span> <span class="n">CallBackObj</span><span class="p">)</span>
+
+    <span class="n">CallBackObj</span><span class="o">.</span><span class="n">RegScriptProc_P</span><span class="p">(</span><span class="s">"PrintHello"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">CleGroup</span> <span class="o">*</span><span class="n">stargo</span><span class="o">.</span><span class="n">StarSrvGroup</span><span class="p">,</span> <span class="n">CleService</span> <span class="o">*</span><span class="n">stargo</span><span class="o">.</span><span class="n">StarService</span><span class="p">,</span> <span class="n">CleObject</span> <span class="o">*</span><span class="n">stargo</span><span class="o">.</span><span class="n">StarObject</span><span class="p">,</span> <span class="n">Paras</span> <span class="p">[]</span><span class="k">interface</span><span class="p">{})</span> <span class="k">interface</span><span class="p">{}</span> <span class="p">{</span>
+        <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">Paras</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span><span class="k">interface</span><span class="p">{}{</span><span class="s">"return from go"</span><span class="p">,</span> <span class="m">345.4</span><span class="p">}</span>
+    <span class="p">})</span>
+
+    <span class="n">retobj</span> <span class="o">:=</span> <span class="n">python</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="s">"TestCallBack"</span><span class="p">,</span> <span class="s">"hello "</span><span class="p">,</span> <span class="s">"world"</span><span class="p">)</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">stargo</span><span class="o">.</span><span class="n">StarObject</span><span class="p">)</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">retobj</span><span class="p">)</span></code></pre></figure>
+
+<h3 id="6-run">6. Run</h3>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  go build
+  
+  load library error[126], try[C:<span class="se">\s</span>rplab/libs64/star_python36.dll]
+  load library error[126], try[C:<span class="se">\W</span>INDOWS<span class="se">\s</span>ystem32/star_python36.dll]
+  load library error[126], try[C:<span class="se">\s</span>rplab/libs64/star_python36.pyd]
+  load library <span class="o">[</span>C:<span class="se">\s</span>rplab/libs64/star_python36.pyd] success....
+  basic script <span class="o">[</span>python] <span class="k">for </span>version <span class="o">[</span>36] is registered, you can use <span class="o">[</span>python] to interact with the script
+  123
+  multiply.... &lt;__main__.Multiply object at 0x0000000006D69320&gt; 11 22
+  instance multiply <span class="o">=</span> 242
+  hello  world
+  <span class="o">[</span><span class="nt">---------------</span> 1234]
+  <span class="k">return </span>from go
+  345.4
+  Name60E15194[python36:tuple]<span class="o">(</span>666, 777<span class="o">)</span>  
+</code></pre></div></div>
+
+<ul>
+  <li>python code of “testpy.py”</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">tt</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span> <span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">666</span><span class="p">,</span><span class="mi">777</span>
+<span class="n">g1</span> <span class="o">=</span> <span class="mi">123</span>
+<span class="k">def</span> <span class="nf">yy</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">'jack'</span><span class="p">:</span> <span class="mi">4098</span><span class="p">,</span> <span class="s">'sape'</span><span class="p">:</span> <span class="mi">4139</span><span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">Multiply</span> <span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">y</span>
+    
+    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">"multiply...."</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span></code></pre></figure>
+
+<ul>
+  <li>python code of “testcallback.py”</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">TestCallBack</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span> <span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">ParaPkg</span> <span class="o">=</span> <span class="n">CallBackObj</span><span class="o">.</span><span class="n">PrintHello</span><span class="p">(</span><span class="s">"---------------"</span><span class="p">,</span><span class="mi">1234</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">ParaPkg</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">ParaPkg</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="mi">666</span><span class="p">,</span><span class="mi">777</span></code></pre></figure>
+
+<h1 align="left"><font color="#FF9900">Sample Download</font></h1>
+
+<p><a href="/datas/go_call_python.zip" title="go_call_python">go_call_python.zip</a></p>
+
+:ET

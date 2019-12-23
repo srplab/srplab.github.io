@@ -1,0 +1,290 @@
+I"†Ü<p>A new data-driven programming idea and method is proposed and discussed here: process chain programming, whose purpose is to improve programming flexibility, constructivity, and sharing.</p>
+
+<h3 id="1-introduction">1. Introduction</h3>
+
+<p>The data-driven programming method can flexibly control the execution logic according to different data types, but currently this programming method does not introduce scheduling technology, and the logic sequence to be executed is fixedly encoded in the execution program. Although the correspondence between data and processes can be extracted and placed separately in the database or controlled by a script-like dynamic language to increase flexibility, but if the correspondence between data and processes cannot be fixed (such as the process to be executed according to a certain rule), Or the state of the process needs to be stored (such as waiting for other data or pending), the existing processing methods are no longer applicable, and a scheduling mechanism needs to be introduced.</p>
+
+<p>Data-driven process scheduling includes data objects, process (function) objects and schedulers. Data and processes (functions) can be scheduled as objects. Processes (functions) are no longer fixedly located in one or some logical processing sequences.</p>
+
+<p>The scheduling of process objects is driven by data objects, with a description of the types of input and output data objects and a context for scheduling. The description of the process object is similar to the function prototype definition, except that in the function prototype definition, the types of input and output are not limited and may be too general (for example: function input string, this string may have many meanings, it may be a URL, It may be formatted data, it may be ordinary text, or a sequence with some meanings), and there is no constraint between the function execution logic and the environment (such as: referencing or modifying global variables), and it does not store scheduling related information such as running status, result in very weak schedulability. Most current scheduling is based on thread granularity.</p>
+
+<p>Many modern programming languages support the reflection method, which can obtain the representation of the function prototype. Although it is more complicated to implement, it can support the scheduling of functions. However, due to lack of clear definition of the meaning of input and output data objects, and the context related to scheduling, Scheduling via reflection mechanism lacks flexibility and requires strict logic control. Another microservices programming method is to split complex logic into small service units, but its original intention and purpose are more to reduce the complexity and efficiency of publish, maintenance and upgrade, rather than the microservices scheduling itself.</p>
+
+<p>The scheduler searches for a process (function) object capable of processing the data object according to the type of the data object, allocates the data object to the process object for execution, and obtains the output data object. When looking for a process object, apps can set the desired output data object type. If there is no single process output of this type, apps can find the process object sequence for the output target data object type according to the input and output object types of the process object. The sequence forms a process chain that processes the input data objects and obtains the desired output data objects.</p>
+
+<p>Process chain programming pchain (process chain) programming implements the scheduling and programming methods mentioned here, currently supports python language and can be installed via pip</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip <span class="nb">install </span>pchain
+</code></pre></div></div>
+
+<h3 id="2-define-data-object">2. Define Data Object</h3>
+
+<p>The data should have a type. If the data loses its type, the original meaning of the data is lost. At this time, the processing of this data needs to be processed by a predetermined logical sequence because only the designer knows the meaning of the data. Cannot achieve automatic scheduling. Supporting a flexible definition of a large number of data object types has meaning, as in the world we live in, there are millions of insect species.
+Just as the traditional scheduling has the context of the thread, the scheduling of the data object also requires the context, recording which processes the data object has been allocated to prevent the data object from being repeatedly allocated, as shown below:</p>
+
+<p>The process object list records the process objects to which the data objects have been assigned. Data points to specific data content or value. After a data object has scheduling context, more information can be recorded, such as a list of source objects: indicating which objects the data object depends on; owner process objects: indicating which process object the data object was generated by. These records reflect the data the relationship between data and the process.
+The types supported by programming languages are raw types, such as integers, strings, floating-point types, and so on. These raw types do not have a specific meaning, such as integer, which can represent age, weight, size, and so on. Programming languages support structures or classes. These structures and classes have specific meanings, and their instances can be used as data objects to become input data or output data to other processes (processing functions).
+Instances of classes defined in current programming languages lack such a context management structure that supports scheduling, and it is not possible to record whether the data object has been assigned to a process object, resulting in the inability to automatically assign and schedule data objects. Therefore, a new method of defining data objects is needed.
+In the pchain implementation, the definition of python data objects is supported by the pydata module. It is implemented through the two functions DefineType / DefineSubType. When defining the python data object type, you can specify the raw python type.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">DefineType</span><span class="p">(</span><span class="n">tpname</span><span class="p">,</span><span class="n">rawtype</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">DefineSubType</span><span class="p">(</span><span class="n">parenttype</span><span class="p">,</span><span class="n">tpname</span><span class="p">,</span><span class="n">rawtype</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>E.g:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pydata</span><span class="o">.</span><span class="n">DefineType</span><span class="p">(</span><span class="s">"NumberClass"</span><span class="p">,</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">pydata</span><span class="o">.</span><span class="n">DefineSubType</span><span class="p">(</span><span class="n">NumberClass</span><span class="p">,</span><span class="s">'IntClass'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>When creating an instance of a data object, apps must specify a value or a raw instance. After the data object is created, its content should not be modified. App can call the Lock method. If the data object corresponds to a native instance of a python class, this method cannot prevent the modification of attributes in the instance, and it is guaranteed when it is used.
+The data object not only records which processes have been assigned to support the scheduler‚Äôs data object allocation process, but also records the relationships between the data objects, including which process object the data object was generated by and which data objects it was based on, and which data objects were generated by that data object. These relationships can be used to extract rules related to data objects. In order to support the rule system, the data objects need to have unique keywords. One-to-one correspondence between the data objects and the nodes in the rule network can be obtained by the GetTag function.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">d</span> <span class="o">=</span> <span class="n">NumberClass</span><span class="p">(</span><span class="mf">12.3</span><span class="p">)</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">GetTag</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The output is :</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>6d5450b62cb0b8d2b4c0ace38eef4b4df697129e
+</code></pre></div></div>
+
+<p>Data objects can be stored as JSON strings and can be restored on other computers for sharing.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">buf</span><span class="o">=</span><span class="n">Service</span><span class="o">.</span><span class="n">_ServiceGroup</span><span class="o">.</span><span class="n">_NewParaPkg</span><span class="p">()</span>
+<span class="n">realm</span><span class="o">.</span><span class="n">SaveObject</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+<span class="n">val</span> <span class="o">=</span> <span class="n">buf</span><span class="o">.</span><span class="n">_ToJSon</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The output is :</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">{</span><span class="s2">"PackageInfo"</span>:[],<span class="s2">"ObjectList"</span>:[<span class="o">{</span><span class="s2">"PackageInfo"</span>:[],<span class="s2">"Value"</span>:[null,<span class="s2">"gANHQCiZmZmZmZou"</span><span class="o">]</span>,<span class="s2">"ClassName"</span>:<span class="s2">"NumberClass"</span><span class="o">}]}</span>
+</code></pre></div></div>
+
+<h3 id="3-define-process-object">3. Define Process Object</h3>
+
+<p>A process object contains a description part that describe the type of input and output data and a logic execution part. The input and output of process objects must be the data objects defined above. Based on the management structure owned by these data objects, data object-based scheduling can be achieved. If an input of a process is not a data object, the scheduler cannot determine what data objects can be assigned to the process. And if the output of the process object is not a data object, the scheduler cannot further process the output data after the process produces output.
+During the execution of a process, there are situations where the entire execution cannot be completed at once. For example, the process may have incomplete data, require more data objects, may need to be repeatedly executed, or may be suspended due to waiting. Therefore, the process object also needs a context for scheduling. The existing method (function) definition method does not support it, and a new process object needs to be defined.</p>
+
+<p>In pchain, the definition of python process objects is supported by the pyproc module, which is implemented by the DefineProc function.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pyproc</span><span class="o">.</span><span class="n">DefineProc</span> <span class="p">(</span><span class="n">tpname</span><span class="p">,</span> <span class="n">InputDataType</span><span class="p">,</span> <span class="n">OutputDataType</span><span class="p">,</span> <span class="n">PyFunc</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><img src="/images/flutter_and_golang_android_sharelibrary.png" alt="" width="320px" /></p>
+
+<p>The ‚Äúlibstar_go.so‚Äù is compiled from golang module, as step 4.</p>
+
+<h3 id="4-compiling-golang-module-for-android-and-ios">4. Compiling golang module for android and ios</h3>
+
+<ul>
+  <li>Android</li>
+</ul>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># compiled with android-ndk-r12b</span>
+
+<span class="nv">GO</span><span class="o">=</span><span class="s2">"/usr/local/go/bin/go"</span>
+
+<span class="nb">arch</span><span class="o">=(</span><span class="s2">"x86"</span> <span class="s2">"x86_64"</span> <span class="s2">"arm64"</span> <span class="s2">"arm"</span><span class="o">)</span><span class="p">;</span>
+
+<span class="k">for </span>s <span class="k">in</span> <span class="k">${</span><span class="nv">arch</span><span class="p">[@]</span><span class="k">}</span><span class="p">;</span> <span class="k">do
+  </span><span class="nb">echo</span> <span class="s2">"build for </span><span class="nv">$s</span><span class="s2">"</span>
+
+  <span class="nb">cd </span>writting_golang_multithreading_extension_for_other_scripts
+
+  <span class="nb">export </span><span class="nv">GOOS</span><span class="o">=</span>android
+  <span class="nb">export </span><span class="nv">CGO_ENABLED</span><span class="o">=</span>1
+
+  <span class="k">if</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$s</span><span class="s2">"</span> <span class="o">==</span> <span class="s2">"arm"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">export </span><span class="nv">NDK_TOOLCHAIN</span><span class="o">=</span>/Users/srplab/Desktop/ndk_toolchain/android-toolchain.arm
+    <span class="nb">export </span><span class="nv">CC</span><span class="o">=</span><span class="nv">$NDK_TOOLCHAIN</span>/bin/arm-linux-androideabi-gcc
+    <span class="nb">export </span><span class="nv">GOARCH</span><span class="o">=</span>arm
+    <span class="nb">export </span><span class="nv">GOARM</span><span class="o">=</span>7
+  <span class="k">elif</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$s</span><span class="s2">"</span> <span class="o">==</span> <span class="s2">"x86"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">export </span><span class="nv">NDK_TOOLCHAIN</span><span class="o">=</span>/Users/srplab/Desktop/ndk_toolchain/android-toolchain.x86
+    <span class="nb">export </span><span class="nv">CC</span><span class="o">=</span><span class="nv">$NDK_TOOLCHAIN</span>/bin/i686-linux-android-gcc
+    <span class="nb">export </span><span class="nv">GOARCH</span><span class="o">=</span>386
+  <span class="k">elif</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$s</span><span class="s2">"</span> <span class="o">==</span> <span class="s2">"x86_64"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">export </span><span class="nv">NDK_TOOLCHAIN</span><span class="o">=</span>/Users/srplab/Desktop/ndk_toolchain/android-toolchain.x86_64
+    <span class="nb">export </span><span class="nv">CC</span><span class="o">=</span><span class="nv">$NDK_TOOLCHAIN</span>/bin/x86_64-linux-android-gcc
+    <span class="nb">export </span><span class="nv">GOARCH</span><span class="o">=</span>amd64
+  <span class="k">elif</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$s</span><span class="s2">"</span> <span class="o">==</span> <span class="s2">"arm64"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">export </span><span class="nv">NDK_TOOLCHAIN</span><span class="o">=</span>/Users/srplab/Desktop/ndk_toolchain/android-toolchain.arm64
+    <span class="nb">export </span><span class="nv">CC</span><span class="o">=</span><span class="nv">$NDK_TOOLCHAIN</span>/bin/aarch64-linux-android-gcc
+    <span class="nb">export </span><span class="nv">GOARCH</span><span class="o">=</span>arm64
+  <span class="k">fi</span>
+
+  <span class="nv">$GO</span> build <span class="nt">-buildmode</span><span class="o">=</span>c-shared <span class="nt">-o</span> libstar_go.so
+  
+  <span class="nb">cd</span> ..
+  <span class="k">if</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$s</span><span class="s2">"</span> <span class="o">==</span> <span class="s2">"arm"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">cp </span>writting_golang_multithreading_extension_for_other_scripts/libstar_go.so flutter_golang/android/app/src/main/jniLibs/armeabi-v7a
+  <span class="k">elif</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$s</span><span class="s2">"</span> <span class="o">==</span> <span class="s2">"x86"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">cp </span>writting_golang_multithreading_extension_for_other_scripts/libstar_go.so flutter_golang/android/app/src/main/jniLibs/x86
+  <span class="k">elif</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$s</span><span class="s2">"</span> <span class="o">==</span> <span class="s2">"x86_64"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">cp </span>writting_golang_multithreading_extension_for_other_scripts/libstar_go.so flutter_golang/android/app/src/main/jniLibs/x86_64
+  <span class="k">elif</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$s</span><span class="s2">"</span> <span class="o">==</span> <span class="s2">"arm64"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">cp </span>writting_golang_multithreading_extension_for_other_scripts/libstar_go.so flutter_golang/android/app/src/main/jniLibs/arm64-v8a
+  <span class="k">fi
+
+  </span><span class="nb">rm</span> <span class="nt">-rf</span> writting_golang_multithreading_extension_for_other_scripts/libstar_go.so
+ 
+<span class="k">done</span>
+</code></pre></div></div>
+
+<ul>
+  <li>ios</li>
+</ul>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">rm</span> <span class="nt">-rf</span> libstar_go.a
+
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">"/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:/usr/local/bin:/usr/bin:/bin:</span><span class="nv">$PATH</span><span class="s2">"</span>  
+<span class="nb">export </span><span class="nv">SRCPATH</span><span class="o">=</span><span class="s2">"writting_golang_multithreading_extension_for_other_scripts"</span>
+
+<span class="nb">arch</span><span class="o">=(</span><span class="s2">"i386"</span> <span class="s2">"x86_64"</span> <span class="s2">"arm64"</span> <span class="s2">"armv7"</span><span class="o">)</span><span class="p">;</span>
+
+<span class="k">for </span>s <span class="k">in</span> <span class="k">${</span><span class="nv">arch</span><span class="p">[@]</span><span class="k">}</span><span class="p">;</span> <span class="k">do
+  </span><span class="nb">echo</span> <span class="s2">"build for </span><span class="nv">$s</span><span class="s2">"</span>
+
+  <span class="nb">cd</span> <span class="nv">$SRCPATH</span>
+
+  <span class="nb">export </span><span class="nv">GOOS</span><span class="o">=</span>darwin
+  <span class="nb">export </span><span class="nv">CGO_ENABLED</span><span class="o">=</span>1
+  <span class="k">if</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$s</span><span class="s2">"</span> <span class="o">==</span> <span class="s2">"armv7"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">export </span><span class="nv">CFLAGS</span><span class="o">=</span><span class="s2">"-arch </span><span class="nv">$s</span><span class="s2"> -miphoneos-version-min=6.0 -isysroot "</span><span class="si">$(</span>xcrun <span class="nt">-sdk</span> iphoneos <span class="nt">--show-sdk-path</span><span class="si">)</span>
+    <span class="nb">export </span><span class="nv">CC</span><span class="o">=</span>/usr/local/go/misc/ios/clangwrap.sh
+    <span class="nb">export </span><span class="nv">GOARCH</span><span class="o">=</span>arm
+    <span class="nb">export </span><span class="nv">GOARM</span><span class="o">=</span>7
+  <span class="k">elif</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$s</span><span class="s2">"</span> <span class="o">==</span> <span class="s2">"i386"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">export </span><span class="nv">CFLAGS</span><span class="o">=</span><span class="s2">"-arch </span><span class="nv">$s</span><span class="s2"> -miphoneos-version-min=6.0 -isysroot "</span><span class="si">$(</span>xcrun <span class="nt">-sdk</span> iphonesimulator <span class="nt">--show-sdk-path</span><span class="si">)</span>
+    <span class="nb">export </span><span class="nv">CC</span><span class="o">=</span><span class="s2">"clang </span><span class="nv">$CFLAGS</span><span class="s2">"</span>
+    <span class="nb">export </span><span class="nv">GOARCH</span><span class="o">=</span>386
+  <span class="k">elif</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$s</span><span class="s2">"</span> <span class="o">==</span> <span class="s2">"x86_64"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">export </span><span class="nv">CFLAGS</span><span class="o">=</span><span class="s2">"-arch </span><span class="nv">$s</span><span class="s2"> -miphoneos-version-min=6.0 -isysroot "</span><span class="si">$(</span>xcrun <span class="nt">-sdk</span> iphonesimulator <span class="nt">--show-sdk-path</span><span class="si">)</span>
+    <span class="nb">export </span><span class="nv">CC</span><span class="o">=</span><span class="s2">"clang </span><span class="nv">$CFLAGS</span><span class="s2">"</span>
+    <span class="nb">export </span><span class="nv">GOARCH</span><span class="o">=</span>amd64
+  <span class="k">elif</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$s</span><span class="s2">"</span> <span class="o">==</span> <span class="s2">"arm64"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">export </span><span class="nv">CFLAGS</span><span class="o">=</span><span class="s2">"-arch </span><span class="nv">$s</span><span class="s2"> -miphoneos-version-min=6.0 -isysroot "</span><span class="si">$(</span>xcrun <span class="nt">-sdk</span> iphoneos <span class="nt">--show-sdk-path</span><span class="si">)</span>
+    <span class="nb">export </span><span class="nv">CC</span><span class="o">=</span><span class="s2">"clang </span><span class="nv">$CFLAGS</span><span class="s2">"</span>
+    <span class="nb">export </span><span class="nv">GOARCH</span><span class="o">=</span>arm64
+  <span class="k">fi
+
+  </span>go build <span class="nt">-tags</span><span class="o">=</span><span class="s1">'ios'</span> <span class="nt">-buildmode</span><span class="o">=</span>c-archive <span class="nt">-o</span> libstar_go.a
+  
+  <span class="nb">cd</span> ..
+  <span class="nb">mkdir</span> <span class="nv">$s</span>
+  <span class="nb">cp</span> <span class="nv">$SRCPATH</span>/libstar_go.a <span class="nv">$s</span>
+  <span class="nb">rm</span> <span class="nt">-rf</span> <span class="nv">$SRCPATH</span>/libstar_go.a
+ 
+<span class="k">done
+
+</span>lipo <span class="nt">-create</span> ./i386/libstar_go.a ./x86_64/libstar_go.a ./armv7/libstar_go.a ./arm64/libstar_go.a <span class="nt">-o</span> libstar_go.a
+
+<span class="nb">rm</span> <span class="nt">-rf</span> ./i386
+<span class="nb">rm</span> <span class="nt">-rf</span> ./x86_64
+<span class="nb">rm</span> <span class="nt">-rf</span> ./armv7
+<span class="nb">rm</span> <span class="nt">-rf</span> ./arm64
+
+lipo <span class="nt">-info</span> libstar_go.a
+</code></pre></div></div>
+
+<h3 id="5-dart-code">5. dart code</h3>
+
+<ul>
+  <li>Initialize starcore</li>
+</ul>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">StarCoreFactory</span> <span class="n">starcore</span> <span class="o">=</span> <span class="n">await</span> <span class="n">Starflut</span><span class="o">.</span><span class="na">getFactory</span><span class="o">();</span>
+<span class="n">StarServiceClass</span> <span class="n">Service</span> <span class="o">=</span> <span class="n">await</span> <span class="n">starcore</span><span class="o">.</span><span class="na">initSimple</span><span class="o">(</span><span class="s">"test"</span><span class="o">,</span> <span class="s">"123"</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="o">[]);</span>
+<span class="n">await</span> <span class="n">Service</span><span class="o">.</span><span class="na">checkPassword</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Register callback function</li>
+</ul>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="n">await</span> <span class="n">starcore</span><span class="o">.</span><span class="na">regMsgCallBackP</span><span class="o">(</span>
+        <span class="o">(</span><span class="kt">int</span> <span class="n">serviceGroupID</span><span class="o">,</span> <span class="kt">int</span> <span class="n">uMsg</span><span class="o">,</span> <span class="kt">Object</span> <span class="n">wParam</span><span class="o">,</span> <span class="kt">Object</span> <span class="n">lParam</span><span class="o">)</span> <span class="n">async</span><span class="o">{</span>
+          <span class="k">if</span><span class="o">(</span> <span class="n">uMsg</span> <span class="o">==</span> <span class="n">Starflut</span><span class="o">.</span><span class="na">MSG_DISPMSG</span> <span class="o">||</span> <span class="n">uMsg</span> <span class="o">==</span> <span class="n">Starflut</span><span class="o">.</span><span class="na">MSG_DISPLUAMSG</span> <span class="o">){</span>
+            <span class="n">ShowOutput</span><span class="o">(</span><span class="n">wParam</span><span class="o">);</span>
+          <span class="o">}</span>
+      <span class="n">print</span><span class="o">(</span><span class="s">"</span><span class="si">$serviceGroupID</span><span class="s">  </span><span class="si">$uMsg</span><span class="s">   </span><span class="si">$wParam</span><span class="s">   </span><span class="si">$lParam</span><span class="s">"</span><span class="o">);</span>
+      <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">});</span>
+</code></pre></div></div>
+
+<p>In callback function, we capture the output from golang, and show it in text window.</p>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="kt">void</span> <span class="nf">ShowOutput</span><span class="p">(</span><span class="kt">String</span> <span class="n">Info</span><span class="o">)</span> <span class="n">async</span><span class="o">{</span>
+    <span class="k">if</span><span class="o">(</span> <span class="n">Info</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">Info</span><span class="o">.</span><span class="na">length</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
+      <span class="k">return</span><span class="o">;</span>
+    <span class="n">_outputString</span> <span class="o">=</span> <span class="n">_outputString</span> <span class="o">+</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span> <span class="o">+</span> <span class="n">Info</span><span class="o">;</span>
+    <span class="n">setState</span><span class="o">((){</span>
+
+    <span class="o">});</span>
+  <span class="o">}</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Load and execute golang module</li>
+</ul>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kt">bool</span> <span class="n">isAndroid</span> <span class="o">=</span> <span class="n">await</span> <span class="n">Starflut</span><span class="o">.</span><span class="na">isAndroid</span><span class="o">();</span>
+    <span class="k">if</span><span class="o">(</span> <span class="n">isAndroid</span> <span class="o">==</span> <span class="kc">true</span> <span class="o">){</span>
+      <span class="kt">String</span> <span class="n">path</span> <span class="o">=</span> <span class="n">await</span> <span class="n">Starflut</span><span class="o">.</span><span class="na">getNativeLibraryDir</span><span class="o">();</span>
+      <span class="n">List</span> <span class="n">result</span> <span class="o">=</span> <span class="n">await</span> <span class="n">Service</span><span class="o">.</span><span class="na">doFile</span><span class="o">(</span><span class="s">""</span><span class="o">,</span><span class="n">path</span> <span class="o">+</span> <span class="s">"/libstar_go.so"</span><span class="o">,</span><span class="s">""</span><span class="o">);</span>
+      <span class="n">print</span><span class="o">(</span><span class="n">result</span><span class="o">);</span>
+    <span class="o">}</span><span class="k">else</span><span class="o">{</span>
+      <span class="n">List</span> <span class="n">result</span> <span class="o">=</span> <span class="n">await</span> <span class="n">Service</span><span class="o">.</span><span class="na">doFile</span><span class="o">(</span><span class="s">""</span><span class="o">,</span><span class="s">"libstar_go.dylib"</span><span class="o">,</span><span class="s">""</span><span class="o">);</span>
+      <span class="n">print</span><span class="o">(</span><span class="n">result</span><span class="o">);</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Get starcore object created by golang module</li>
+</ul>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="n">StarObjectClass</span> <span class="n">goObject</span> <span class="o">=</span> <span class="n">await</span> <span class="n">Service</span><span class="o">.</span><span class="na">getObject</span><span class="o">(</span><span class="s">"testgo"</span><span class="o">);</span>
+    <span class="n">print</span><span class="o">(</span><span class="s">"</span><span class="si">$goObject</span><span class="s">"</span><span class="o">);</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Create starcore object, which will be called from golang</li>
+</ul>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="n">StarObjectClass</span> <span class="n">callBackObj</span> <span class="o">=</span> <span class="n">await</span> <span class="n">Service</span><span class="o">.</span><span class="na">newObject</span><span class="o">([</span><span class="s">"LuaObj"</span><span class="o">]);</span>
+    <span class="n">await</span> <span class="n">callBackObj</span><span class="o">.</span><span class="na">regScriptProcP</span><span class="o">(</span><span class="s">"Print"</span><span class="o">,</span> <span class="o">(</span><span class="n">StarObjectClass</span> <span class="n">cleObject</span><span class="o">,</span> <span class="n">List</span> <span class="n">paras</span> <span class="o">)</span> <span class="n">async</span> <span class="o">{</span>
+			    <span class="n">print</span><span class="o">(</span><span class="s">"hello from lua"</span><span class="o">);</span>
+			    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+		      <span class="o">});</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Call golang function</li>
+</ul>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kd">dynamic</span> <span class="n">ttResult</span> <span class="o">=</span> <span class="n">await</span> <span class="n">goObject</span><span class="o">.</span><span class="na">call</span><span class="o">(</span><span class="s">"tt"</span><span class="o">,[</span><span class="mi">222</span><span class="o">,</span><span class="mi">333</span><span class="o">]);</span>
+    <span class="n">print</span><span class="o">(</span><span class="s">"</span><span class="si">$ttResult</span><span class="s">"</span><span class="o">);</span>
+</code></pre></div></div>
+
+<h3 id="6-compile-for-ios">6. compile for ios</h3>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>flutter clean
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">STARCORE_PATH</span><span class="o">=</span><span class="s1">'/Users/srplab/Desktop'</span>
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">STARCORE_GOLIBRARYPATH</span><span class="o">=</span><span class="s1">'/Users/srplab/Desktop/flutter.study.example/flutter.golang'</span>
+<span class="nv">$ </span>flutter build ios <span class="nt">--no-codesign</span>
+</code></pre></div></div>
+
+<h3 id="7-screenshot">7. screenshot</h3>
+
+<p><img src="/images/flutter_and_golang_ios_screenshot.png" alt="" width="320px" /></p>
+
+<p><img src="/images/flutter_and_golang_android_screenshot.jpg" alt="" width="320px" /></p>
+
+<h1 align="left"><font color="#FF9900">Sample Download</font></h1>
+
+<p><a href="/datas/flutter_and_golang_sample.zip" title="flutter_and_golang_sample">flutter_and_golang_sample.zip</a></p>
+
+:ET

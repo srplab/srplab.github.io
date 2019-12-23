@@ -1,0 +1,199 @@
+I"�q<h3 id="this-is-an-example-which-shows-how-kotlin-calls-python-on-android-platform">This is an example which shows how kotlin calls python on android platform.</h3>
+
+<h1 align="left"><font color="#FF9900">Background</font></h1>
+
+<p>This example is based on CLE. CLE supports android platform, python language, and interaction between ruby and kotlin(or java).</p>
+
+<h3 id="1-create-project-and-add-the-dependent-files">1. Create project and Add the dependent files</h3>
+
+<ul>
+  <li>add starcore_android_rX.XX.jar and share libraries</li>
+</ul>
+
+<p><img src="/images/2018-03-17-kotlin_call_python_on_android_project.png" alt="" width="320px" /></p>
+
+<h3 id="2-public-function-copy-files-to-the-applications-installation-directory-from-assets">2. Public function, copy files to the application’s installation directory from assets</h3>
+
+<ul>
+  <li>copyFile</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">    <span class="kd">private</span> <span class="n">fun</span> <span class="nf">copyFile</span><span class="o">(</span><span class="nl">c:</span> <span class="nc">Activity</span><span class="o">,</span> <span class="nl">Name:</span> <span class="nc">String</span><span class="o">,</span> <span class="nl">desPath:</span> <span class="nc">String</span><span class="o">?)</span> <span class="o">{</span>
+        <span class="kt">var</span> <span class="nl">outfile:</span> <span class="nc">File</span><span class="o">?</span> <span class="o">=</span> <span class="kc">null</span>
+        <span class="n">outfile</span> <span class="o">=</span> <span class="nc">File</span><span class="o">(</span><span class="s">"/data/data/$packageName/files/$Name"</span><span class="o">)</span>
+        <span class="n">outfile</span><span class="o">.</span><span class="na">createNewFile</span><span class="o">()</span>
+        <span class="n">val</span> <span class="n">out</span> <span class="o">=</span> <span class="nc">FileOutputStream</span><span class="o">(</span><span class="n">outfile</span><span class="o">)</span>
+        <span class="n">val</span> <span class="n">buffer</span> <span class="o">=</span> <span class="nc">ByteArray</span><span class="o">(</span><span class="mi">1024</span><span class="o">)</span>
+        <span class="n">val</span> <span class="nl">f_in:</span> <span class="nc">InputStream</span>
+        <span class="kt">var</span> <span class="n">readLen</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">desPath</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+            <span class="n">f_in</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">assets</span><span class="o">.</span><span class="na">open</span><span class="o">(</span><span class="n">desPath</span> <span class="o">+</span> <span class="nc">Name</span><span class="o">)</span>
+        <span class="k">else</span>
+            <span class="n">f_in</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">assets</span><span class="o">.</span><span class="na">open</span><span class="o">(</span><span class="nc">Name</span><span class="o">)</span>
+        <span class="n">readLen</span> <span class="o">=</span> <span class="n">f_in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buffer</span><span class="o">)</span>
+        <span class="k">while</span> <span class="o">(</span><span class="n">readLen</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">out</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">buffer</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">readLen</span><span class="o">)</span>
+            <span class="n">readLen</span> <span class="o">=</span> <span class="n">f_in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buffer</span><span class="o">)</span>
+        <span class="o">}</span>
+        <span class="n">out</span><span class="o">.</span><span class="na">flush</span><span class="o">()</span>
+        <span class="n">f_in</span><span class="o">.</span><span class="na">close</span><span class="o">()</span>
+        <span class="n">out</span><span class="o">.</span><span class="na">close</span><span class="o">()</span>
+    <span class="o">}</span></code></pre></figure>
+
+<h1 align="left"><font color="#FF9900">Using the code</font></h1>
+
+<h3 id="1-copy-files-to-app-folder">1. copy files to app folder</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">        <span class="n">val</span> <span class="n">destDir</span> <span class="o">=</span> <span class="nc">File</span><span class="o">(</span><span class="s">"/data/data/$packageName/files"</span><span class="o">)</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">destDir</span><span class="o">.</span><span class="na">exists</span><span class="o">())</span>
+            <span class="n">destDir</span><span class="o">.</span><span class="na">mkdirs</span><span class="o">()</span>
+        <span class="n">val</span> <span class="n">python2_7_libFile</span> <span class="o">=</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">File</span><span class="o">(</span><span class="s">"/data/data/$packageName/files/python3.6.zip"</span><span class="o">)</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">python2_7_libFile</span><span class="o">.</span><span class="na">exists</span><span class="o">())</span> <span class="o">{</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"python3.6.zip"</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nl">e:</span> <span class="nc">Exception</span><span class="o">)</span> <span class="o">{</span>
+            <span class="o">}</span>
+
+        <span class="o">}</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">val</span> <span class="n">nativeLibraryDir</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">getApplicationInfo</span><span class="o">().</span><span class="na">nativeLibraryDir</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">nativeLibraryDir</span><span class="o">.</span><span class="na">contains</span><span class="o">(</span><span class="s">"x86"</span><span class="o">))</span> <span class="o">{</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"_datetime.cpython-36m.so"</span><span class="o">,</span> <span class="s">"x86/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"_socket.cpython-36m.so"</span><span class="o">,</span> <span class="s">"x86/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"_struct.cpython-36m.so"</span><span class="o">,</span> <span class="s">"x86/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"array.cpython-36m.so"</span><span class="o">,</span> <span class="s">"x86/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"binascii.cpython-36m.so"</span><span class="o">,</span> <span class="s">"x86/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"select.cpython-36m.so"</span><span class="o">,</span> <span class="s">"x86/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"unicodedata.cpython-36m.so"</span><span class="o">,</span> <span class="s">"x86/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"zlib.cpython-36m.so"</span><span class="o">,</span> <span class="s">"x86/"</span><span class="o">)</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"_datetime.cpython-36m.so"</span><span class="o">,</span> <span class="s">"armeabi/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"_socket.cpython-36m.so"</span><span class="o">,</span> <span class="s">"armeabi/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"_struct.cpython-36m.so"</span><span class="o">,</span> <span class="s">"armeabi/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"array.cpython-36m.so"</span><span class="o">,</span> <span class="s">"armeabi/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"binascii.cpython-36m.so"</span><span class="o">,</span> <span class="s">"armeabi/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"select.cpython-36m.so"</span><span class="o">,</span> <span class="s">"armeabi/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"unicodedata.cpython-36m.so"</span><span class="o">,</span> <span class="s">"armeabi/"</span><span class="o">)</span>
+                <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"zlib.cpython-36m.so"</span><span class="o">,</span> <span class="s">"armeabi/"</span><span class="o">)</span>
+            <span class="o">}</span>
+            <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"test_calljava.py"</span><span class="o">,</span> <span class="s">""</span><span class="o">)</span>
+            <span class="n">copyFile</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">"testpy.py"</span><span class="o">,</span> <span class="s">""</span><span class="o">)</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nl">e:</span> <span class="nc">Exception</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">println</span><span class="o">(</span><span class="n">e</span><span class="o">)</span>
+        <span class="o">}</span></code></pre></figure>
+
+<h3 id="2-load-python-core-share-library">2. Load python core share library</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">        <span class="n">val</span> <span class="n">libpath</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">applicationInfo</span><span class="o">.</span><span class="na">nativeLibraryDir</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="c1">//--load python36 core library first;</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="n">libpath</span> <span class="o">+</span> <span class="s">"/libpython3.6m.so"</span><span class="o">)</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nl">ex:</span> <span class="nc">UnsatisfiedLinkError</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">println</span><span class="o">(</span><span class="n">ex</span><span class="o">.</span><span class="na">toString</span><span class="o">())</span>
+        <span class="o">}</span></code></pre></figure>
+
+<h3 id="3-initilize-cle-using-kotlin">3. Initilize CLE using kotlin</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">        <span class="cm">/*----init starcore----*/</span>
+        <span class="nc">StarCoreFactoryPath</span><span class="o">.</span><span class="na">StarCoreCoreLibraryPath</span> <span class="o">=</span> <span class="n">libpath</span> <span class="c1">//"/data/data/"+getPackageName()+"/lib";</span>
+        <span class="nc">StarCoreFactoryPath</span><span class="o">.</span><span class="na">StarCoreShareLibraryPath</span> <span class="o">=</span> <span class="n">libpath</span> <span class="c1">//"/data/data/"+getPackageName()+"/lib";</span>
+        <span class="nc">StarCoreFactoryPath</span><span class="o">.</span><span class="na">StarCoreOperationPath</span> <span class="o">=</span> <span class="s">"/data/data/$packageName/files"</span>
+
+        <span class="n">val</span> <span class="n">starcore</span> <span class="o">=</span> <span class="nc">StarCoreFactory</span><span class="o">.</span><span class="na">GetFactory</span><span class="o">()</span>
+        <span class="n">val</span> <span class="nc">Service</span> <span class="o">=</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_InitSimple</span><span class="o">(</span><span class="s">"test"</span><span class="o">,</span> <span class="s">"123"</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">0</span><span class="o">)</span>
+        <span class="nc">SrvGroup</span> <span class="o">=</span> <span class="nc">Service</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="s">"_ServiceGroup"</span><span class="o">)</span> <span class="n">as</span> <span class="nc">StarSrvGroupClass</span>
+        <span class="nc">Service</span><span class="o">.</span><span class="na">_CheckPassword</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span></code></pre></figure>
+
+<h3 id="4-initilize-python">4. Initilize python</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">        <span class="nc">SrvGroup</span><span class="o">.</span><span class="na">_InitRaw</span><span class="o">(</span><span class="s">"python36"</span><span class="o">,</span> <span class="nc">Service</span><span class="o">)</span>
+        <span class="n">val</span> <span class="n">python</span> <span class="o">=</span> <span class="nc">Service</span><span class="o">.</span><span class="na">_ImportRawContext</span><span class="o">(</span><span class="s">"python"</span><span class="o">,</span> <span class="s">""</span><span class="o">,</span> <span class="kc">false</span><span class="o">,</span> <span class="s">""</span><span class="o">)</span>
+        <span class="nc">SrvGroup</span><span class="o">.</span><span class="na">_RunScript</span><span class="o">(</span><span class="s">"python"</span><span class="o">,</span> <span class="s">"import sys"</span><span class="o">,</span> <span class="s">""</span><span class="o">)</span></code></pre></figure>
+
+<h3 id="5-set-python-libraries-searching-path">5. Set python libraries searching path</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">        <span class="n">val</span> <span class="n">pythonSys</span> <span class="o">=</span> <span class="n">python</span><span class="o">.</span><span class="na">_GetObject</span><span class="o">(</span><span class="s">"sys"</span><span class="o">)</span>
+        <span class="n">val</span> <span class="n">pythonPath</span> <span class="o">=</span> <span class="n">pythonSys</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="s">"path"</span><span class="o">)</span> <span class="n">as</span> <span class="nc">StarObjectClass</span>
+        <span class="n">pythonPath</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"insert"</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="s">"/data/data/$packageName/files/python3.6.zip"</span><span class="o">)</span>
+        <span class="n">pythonPath</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"insert"</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="s">"/data/data/$packageName/lib"</span><span class="o">)</span>
+        <span class="n">pythonPath</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"insert"</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="s">"/data/data/$packageName/files"</span><span class="o">)</span></code></pre></figure>
+
+<h3 id="6-run-python-file">6. Run python file</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java">        <span class="n">val</span> <span class="nc">CorePath</span> <span class="o">=</span> <span class="s">"/data/data/$packageName/files"</span>
+        <span class="nc">Service</span><span class="o">.</span><span class="na">_DoFile</span><span class="o">(</span><span class="s">"python"</span><span class="o">,</span> <span class="nc">CorePath</span> <span class="o">+</span> <span class="s">"/testpy.py"</span><span class="o">,</span> <span class="s">""</span><span class="o">)</span>
+
+        <span class="n">println</span><span class="o">(</span><span class="n">python</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="s">"g1"</span><span class="o">));</span>
+        <span class="n">val</span> <span class="n">retobj</span> <span class="o">=</span> <span class="n">python</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"tt"</span><span class="o">,</span> <span class="s">"hello "</span><span class="o">,</span> <span class="s">"world"</span><span class="o">)</span> <span class="n">as</span> <span class="nc">StarObjectClass</span>
+        <span class="nf">println</span><span class="o">(</span><span class="s">" "</span><span class="o">+</span><span class="n">retobj</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="mi">0</span><span class="o">)+</span><span class="s">" "</span><span class="o">+</span><span class="n">retobj</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="mi">1</span><span class="o">)+</span><span class="s">" "</span><span class="o">+</span><span class="n">retobj</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="mi">2</span><span class="o">))</span>  </code></pre></figure>
+
+<ul>
+  <li>python code of “testpy.py”</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">tt</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span> <span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">,</span><span class="mi">777</span>
+<span class="n">g1</span> <span class="o">=</span> <span class="mi">123</span>
+<span class="k">def</span> <span class="nf">yy</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">z</span><span class="p">)</span> <span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">'jack'</span><span class="p">:</span> <span class="mi">4098</span><span class="p">,</span> <span class="s">'sape'</span><span class="p">:</span> <span class="mi">4139</span><span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">Multiply</span> <span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">y</span>
+    
+    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">"multiply...."</span><span class="p">,</span><span class="bp">self</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>  </code></pre></figure>
+
+<h3 id="7-python-call-kotlin-class">7. Python call kotlin class</h3>
+
+<ul>
+  <li>kotlin class</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nf">CallBackClass</span><span class="o">(</span><span class="nl">Info:</span> <span class="nc">String</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">init</span> <span class="o">{</span>
+        <span class="n">println</span><span class="o">(</span><span class="nc">Info</span><span class="o">)</span>
+    <span class="o">}</span>
+
+    <span class="n">fun</span> <span class="nf">SetPythonObject</span><span class="o">(</span><span class="nl">rb:</span> <span class="nc">Any</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">val</span> <span class="nc">PythonClass</span> <span class="o">=</span> <span class="n">rb</span> <span class="n">as</span> <span class="nc">StarObjectClass</span>
+        <span class="n">val</span> <span class="n">aa</span> <span class="o">=</span> <span class="s">""</span>
+        <span class="n">val</span> <span class="n">data1</span> <span class="o">=</span> <span class="nc">MainActivity</span><span class="o">.</span><span class="na">Host</span><span class="o">.</span><span class="na">SrvGroup</span><span class="o">.</span><span class="na">_NewParaPkg</span><span class="o">(</span><span class="s">"b"</span><span class="o">,</span> <span class="mi">789</span><span class="o">,</span> <span class="s">"c"</span><span class="o">,</span> <span class="mi">456</span><span class="o">,</span> <span class="s">"a"</span><span class="o">,</span> <span class="mi">123</span><span class="o">).</span><span class="na">_AsDict</span><span class="o">(</span><span class="kc">true</span><span class="o">)</span>
+        <span class="n">val</span> <span class="n">d1</span> <span class="o">=</span> <span class="nc">PythonClass</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"dumps"</span><span class="o">,</span> <span class="n">data1</span><span class="o">,</span> <span class="nc">MainActivity</span><span class="o">.</span><span class="na">Host</span><span class="o">.</span><span class="na">SrvGroup</span><span class="o">.</span><span class="na">_NewParaPkg</span><span class="o">(</span><span class="s">"sort_keys"</span><span class="o">,</span> <span class="kc">true</span><span class="o">).</span><span class="na">_AsDict</span><span class="o">(</span><span class="kc">true</span><span class="o">))</span>
+        <span class="n">println</span><span class="o">(</span><span class="s">""</span> <span class="o">+</span> <span class="n">d1</span><span class="o">)</span>
+        <span class="n">val</span> <span class="n">d2</span> <span class="o">=</span> <span class="nc">PythonClass</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"dumps"</span><span class="o">,</span> <span class="n">data1</span><span class="o">)</span>
+        <span class="n">println</span><span class="o">(</span><span class="s">""</span> <span class="o">+</span> <span class="n">d2</span><span class="o">)</span>
+        <span class="n">val</span> <span class="n">d3</span> <span class="o">=</span> <span class="nc">PythonClass</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"dumps"</span><span class="o">,</span> <span class="n">data1</span><span class="o">,</span> <span class="nc">MainActivity</span><span class="o">.</span><span class="na">Host</span><span class="o">.</span><span class="na">SrvGroup</span><span class="o">.</span><span class="na">_NewParaPkg</span><span class="o">(</span><span class="s">"sort_keys"</span><span class="o">,</span> <span class="kc">true</span><span class="o">,</span> <span class="s">"indent"</span><span class="o">,</span> <span class="mi">4</span><span class="o">).</span><span class="na">_AsDict</span><span class="o">(</span><span class="kc">true</span><span class="o">))</span>
+        <span class="n">println</span><span class="o">(</span><span class="s">""</span> <span class="o">+</span> <span class="n">d3</span><span class="o">)</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></figure>
+
+<ul>
+  <li>python code of “test_calljava.py”</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">JavaClass</span><span class="p">)</span>
+
+<span class="n">val</span> <span class="o">=</span> <span class="n">JavaClass</span><span class="p">(</span><span class="s">"from python"</span><span class="p">)</span>
+<span class="n">val</span><span class="o">.</span><span class="n">SetPythonObject</span><span class="p">(</span><span class="n">json</span><span class="p">);</span>
+<span class="k">print</span><span class="p">(</span><span class="s">"===========end========="</span><span class="p">)</span></code></pre></figure>
+
+<ul>
+  <li>run python code</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java"><span class="n">python</span><span class="o">.</span><span class="na">_Set</span><span class="o">(</span><span class="s">"JavaClass"</span><span class="o">,</span> <span class="nl">CallBackClass:</span><span class="o">:</span><span class="kd">class</span><span class="err">.</span><span class="nc">java</span><span class="o">)</span>
+<span class="nc">Service</span><span class="o">.</span><span class="na">_DoFile</span><span class="o">(</span><span class="s">"python"</span><span class="o">,</span> <span class="nc">CorePath</span> <span class="o">+</span> <span class="s">"/test_calljava.py"</span><span class="o">,</span> <span class="s">""</span><span class="o">)</span></code></pre></figure>
+
+<h1 align="left"><font color="#FF9900">Sample Download</font></h1>
+
+<p><a href="/datas/kotlin_call_python_on_android.zip" title="kotlin_call_python_on_android">kotlin_call_python_on_android.zip</a></p>
+
+:ET

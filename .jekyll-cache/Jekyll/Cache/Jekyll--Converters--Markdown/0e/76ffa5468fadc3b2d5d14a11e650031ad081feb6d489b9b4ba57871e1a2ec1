@@ -1,0 +1,130 @@
+I"�(<h3 id="the-example-shows-how-java-calls-kramdown-to-convert-markdown-file-to-html">The example shows how java calls kramdown to convert markdown file to html.</h3>
+
+<head>
+    <link href="/assets/css/code.css" rel="stylesheet" type="text/css" />
+</head>
+
+<h1 align="left"><font color="#FF9900">Introduction</font></h1>
+
+<p>kramdown can convert markdown file to html, which is written in pure ruby.</p>
+
+<p>The example shows how java calls kramdown to convert markdown file to html.</p>
+
+<h1 align="left"><font color="#FF9900">Background</font></h1>
+
+<p>This example is based on CLE. CLE supports multiple platforms, ruby language, and interaction between ruby and delphi.</p>
+
+<p>The sample is developed with java, ruby 2.2(Installed with RubyInstaller), and kramdown-1.16.2.</p>
+
+<h3 id="1-install-cle">1. Install CLE</h3>
+
+<ul>
+  <li>
+    <p>Download and install CLE for win32</p>
+
+    <p><a href="https://github.com/srplab/starcore_for_windows" title="starcore_for_windows">starcore_for_windows</a></p>
+
+    <p><img src="/images/install_starcore_win32_2_5_2.png" alt="" width="320px" /></p>
+  </li>
+</ul>
+
+<h3 id="2-install-ruby-and-kramdown">2. Install ruby and kramdown</h3>
+
+<ul>
+  <li>skip</li>
+</ul>
+
+<h1 align="left"><font color="#FF9900">Using the code</font></h1>
+
+<h3 id="1-initialize-cle">1. Initialize CLE</h3>
+
+<ul>
+  <li>initialize CLE</li>
+</ul>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-java" data-lang="java"><span class="kd">final</span> <span class="nc">StarCoreFactory</span> <span class="n">starcore</span><span class="o">=</span> <span class="nc">StarCoreFactory</span><span class="o">.</span><span class="na">GetFactory</span><span class="o">();</span>
+<span class="nc">StarServiceClass</span> <span class="nc">Service</span><span class="o">=</span><span class="n">starcore</span><span class="o">.</span><span class="na">_InitSimple</span><span class="o">(</span><span class="s">"test"</span><span class="o">,</span><span class="s">"123"</span><span class="o">,</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">);</span>
+<span class="nc">StarSrvGroupClass</span> <span class="nc">SrvGroup</span> <span class="o">=</span> <span class="o">(</span><span class="nc">StarSrvGroupClass</span><span class="o">)</span><span class="nc">Service</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="s">"_ServiceGroup"</span><span class="o">);</span>
+<span class="nc">Service</span><span class="o">.</span><span class="na">_CheckPassword</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+    </code></pre></figure>
+
+<ul>
+  <li>define callback function</li>
+</ul>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-java" data-lang="java"><span class="n">starcore</span><span class="o">.</span><span class="na">_RegMsgCallBack_P</span><span class="o">(</span><span class="k">new</span> <span class="nc">StarMsgCallBackInterface</span><span class="o">(){</span>
+    <span class="kd">public</span> <span class="nc">Object</span> <span class="nf">Invoke</span><span class="o">(</span><span class="kt">int</span> <span class="nc">ServiceGroupID</span><span class="o">,</span> <span class="kt">int</span> <span class="n">uMes</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">wParam</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">lParam</span><span class="o">){</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_Getint</span><span class="o">(</span><span class="s">"MSG_DISPMSG"</span><span class="o">)</span> <span class="o">||</span> <span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_Getint</span><span class="o">(</span><span class="s">"MSG_DISPLUAMSG"</span><span class="o">)</span> <span class="o">||</span>
+            <span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_Getint</span><span class="o">(</span><span class="s">"MSG_VSDISPMSG"</span><span class="o">)</span> <span class="o">||</span> <span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_Getint</span><span class="o">(</span><span class="s">"MSG_VSDISPLUAMSG"</span><span class="o">))</span>
+        <span class="o">{</span>
+            <span class="nc">String</span> <span class="nc">Str</span><span class="o">;</span>
+            <span class="nc">Str</span> <span class="o">=</span> <span class="o">(</span><span class="nc">String</span><span class="o">)</span><span class="n">wParam</span><span class="o">;</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">Str</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">});</span>
+    </code></pre></figure>
+
+<h3 id="2-initialize-ruby-and-set-ruby-libraries-searching-path">2. Initialize ruby and set ruby libraries searching path</h3>
+
+<ul>
+  <li>initialize ruby</li>
+</ul>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-java" data-lang="java"><span class="n">starcore</span><span class="o">.</span><span class="na">_SetScript</span><span class="o">(</span><span class="s">"ruby"</span><span class="o">,</span><span class="s">""</span><span class="o">,</span> <span class="s">"-v 2.2.0"</span><span class="o">);</span>
+<span class="nc">SrvGroup</span><span class="o">.</span><span class="na">_InitRaw</span><span class="o">(</span><span class="s">"ruby"</span><span class="o">,</span><span class="nc">Service</span><span class="o">);</span>
+<span class="nc">StarObjectClass</span> <span class="n">ruby</span> <span class="o">=</span> <span class="nc">Service</span><span class="o">.</span><span class="na">_ImportRawContext</span><span class="o">(</span><span class="s">"ruby"</span><span class="o">,</span><span class="s">""</span><span class="o">,</span><span class="kc">false</span><span class="o">,</span><span class="s">""</span><span class="o">);</span></code></pre></figure>
+
+<ul>
+  <li>ser ruby library search path</li>
+</ul>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-c--" data-lang="c++"><span class="n">StarObjectClass</span> <span class="n">LOAD_PATH</span> <span class="o">=</span> <span class="p">(</span><span class="n">StarObjectClass</span><span class="p">)</span><span class="n">ruby</span><span class="p">.</span><span class="n">_R</span><span class="p">(</span><span class="s">"LOAD_PATH"</span><span class="p">);</span>
+<span class="n">LOAD_PATH</span><span class="p">.</span><span class="n">_Call</span><span class="p">(</span><span class="s">"unshift"</span><span class="p">,</span> <span class="s">"C:</span><span class="se">\\</span><span class="s">Ruby22</span><span class="se">\\</span><span class="s">lib</span><span class="se">\\</span><span class="s">ruby</span><span class="se">\\</span><span class="s">gems</span><span class="se">\\</span><span class="s">2.2.0</span><span class="se">\\</span><span class="s">gems</span><span class="se">\\</span><span class="s">kramdown-1.16.2</span><span class="se">\\</span><span class="s">lib"</span><span class="p">);</span></code></pre></figure>
+
+<h3 id="3-call-kramdown">3. Call kramdown</h3>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-java" data-lang="java"><span class="n">ruby</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"require"</span><span class="o">,</span><span class="s">"kramdown"</span><span class="o">);</span>
+<span class="nc">StarObjectClass</span> <span class="nc">KramdownDocument</span> <span class="o">=</span> <span class="o">(</span><span class="nc">StarObjectClass</span><span class="o">)</span><span class="n">ruby</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"eval"</span><span class="o">,</span><span class="s">"Kramdown::Document"</span><span class="o">);</span>
+<span class="nc">StarObjectClass</span> <span class="n">resobj</span> <span class="o">=</span> <span class="nc">KramdownDocument</span><span class="o">.</span><span class="na">_New</span><span class="o">(</span><span class="s">""</span><span class="o">,</span><span class="s">""</span><span class="o">,</span><span class="s">"# aaaaaa"</span><span class="o">);</span>
+<span class="nc">Object</span> <span class="n">res</span> <span class="o">=</span> <span class="n">resobj</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"method_missing"</span><span class="o">,</span><span class="s">"to_html"</span><span class="o">);</span>
+<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">res</span><span class="o">);</span></code></pre></figure>
+
+<h3 id="4-compile-and-run">4. Compile and Run</h3>
+
+<ul>
+  <li>
+    <p>compile : javac -classpath .;c:\srplab\libs\starcore.jar java_call_ruby_kramdown.java</p>
+  </li>
+  <li>
+    <p>run : java -classpath .;c:\srplab\libs\starcore.jar java_call_ruby_kramdown</p>
+  </li>
+  <li>
+    <p>You can also add “starcore.jar” to environment variable “CLASSPATH”</p>
+  </li>
+</ul>
+
+<h3 id="5-using-srpwatch-to-capture-output-from-cle">5. Using SRPWatch to capture output from cle</h3>
+
+<ul>
+  <li>
+    <p>output</p>
+
+    <p><img src="/images/java_call_ruby_kramdown_srpwatch.png" alt="" width="320px" /></p>
+  </li>
+</ul>
+
+<h1 align="left"><font color="#FF9900">Sample Download</font></h1>
+
+<ul>
+  <li>
+    <p>download from here</p>
+
+    <p><a href="/datas/java_call_ruby_kramdown.zip" title="java_call_ruby_kramdown">java_call_ruby_kramdown.zip</a></p>
+  </li>
+</ul>
+
+<h1 align="left"><font color="#FF9900">History</font></h1>
+
+:ET

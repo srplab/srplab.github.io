@@ -1,0 +1,171 @@
+I"�:<h3 id="the-example-shows-how-to-use-kramdown-to-convert-markdown-file-to-html-in-apps-developed-with-delphi">The example shows how to use kramdown to convert markdown file to html in apps developed with delphi.</h3>
+
+<head>
+    <link href="/assets/css/code.css" rel="stylesheet" type="text/css" />
+</head>
+
+<h1 align="left"><font color="#FF9900">Introduction</font></h1>
+
+<p>Delphi is widely used programming language and kramdown is used by Jekyll to parse the markdown file. kramdown can convert markdown file to html which is written in pure ruby.</p>
+
+<p>The example shows how to use kramdown to convert markdown file to html in apps developed with delphi.</p>
+
+<h1 align="left"><font color="#FF9900">Background</font></h1>
+
+<p>This example is based on CLE. CLE supports windows platform, ruby language, and interaction between ruby and delphi.</p>
+
+<p>The sample is developed with delphi xe2, ruby 2.2(Installed with RubyInstaller), and kramdown-1.16.2.</p>
+
+<h3 id="1-install-cle">1. Install CLE</h3>
+
+<ul>
+  <li>
+    <p>Download and install CLE for win32</p>
+
+    <p><a href="https://github.com/srplab/starcore_for_windows" title="starcore_for_windows">starcore_for_windows</a></p>
+
+    <p><img src="/images/install_starcore_win32_2_5_2.png" alt="" width="320px" /></p>
+  </li>
+</ul>
+
+<h3 id="2-create-delphi-project">2. Create delphi project</h3>
+
+<ul>
+  <li>
+    <p>create a vcl form project</p>
+
+    <p><img src="/images/create_delphi_vcl_project.png" alt="" width="320px" /></p>
+  </li>
+</ul>
+
+<h3 id="3-add-starcorepas-to-the-project">3. Add starcore.pas to the project</h3>
+
+<ul>
+  <li>
+    <p>Add starcore.pas to the project</p>
+
+    <p>“starcore.pas” is open source file written in pascal, which encapsulates the interface functions of CLE.</p>
+
+    <p><img src="/images/add_starcore_pas_to_project.png" alt="" width="320px" /></p>
+
+    <p>The code</p>
+  </li>
+</ul>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-pascal" data-lang="pascal"><span class="k">uses</span>
+  <span class="n">Winapi</span><span class="p">.</span><span class="n">Windows</span><span class="p">,</span> <span class="n">Winapi</span><span class="p">.</span><span class="n">Messages</span><span class="p">,</span> <span class="n">System</span><span class="p">.</span><span class="n">SysUtils</span><span class="p">,</span> <span class="n">System</span><span class="p">.</span><span class="n">Variants</span><span class="p">,</span> <span class="n">System</span><span class="p">.</span><span class="n">Classes</span><span class="p">,</span> <span class="n">Vcl</span><span class="p">.</span><span class="n">Graphics</span><span class="p">,</span>
+  <span class="n">Vcl</span><span class="p">.</span><span class="n">Controls</span><span class="p">,</span> <span class="n">Vcl</span><span class="p">.</span><span class="n">Forms</span><span class="p">,</span> <span class="n">Vcl</span><span class="p">.</span><span class="n">Dialogs</span><span class="p">,</span> <span class="n">Vcl</span><span class="p">.</span><span class="n">StdCtrls</span><span class="p">,</span><span class="n">starcore</span><span class="p">;</span>
+    </code></pre></figure>
+
+<h3 id="4-use-variant-access-methods-and-properties-of-objects">4. Use variant access methods and properties of objects</h3>
+
+<ul>
+  <li>
+    <p>variant</p>
+
+    <p>For easy access to the object’s methods and properties. The CLE object is encapsulated as a variant variable.
+In this way, you can handle the cle object to the same access delphi object. For example,</p>
+  </li>
+</ul>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-pascal" data-lang="pascal"><span class="k">var</span>
+  <span class="n">varruby</span> <span class="p">:</span> <span class="kt">variant</span><span class="p">;</span>
+  <span class="n">LOAD_PATH</span> <span class="p">:</span> <span class="kt">variant</span><span class="p">;</span>
+  <span class="p">...</span>
+  
+<span class="k">begin</span>
+  <span class="n">varruby</span> <span class="p">:=</span> <span class="n">SRPOBJECT_TOVARIANT</span><span class="p">(</span><span class="n">ruby</span><span class="p">,</span><span class="nb">true</span><span class="p">);</span>  
+  <span class="n">LOAD_PATH</span> <span class="p">:=</span> <span class="n">varruby</span><span class="p">.</span><span class="n">LOAD_PATH</span><span class="p">;</span>
+  <span class="n">LOAD_PATH</span><span class="p">.</span><span class="n">unshift</span><span class="p">(</span><span class="s">'C:\Ruby22\lib\ruby\gems\2.2.0\gems\kramdown-1.16.2\lib'</span><span class="p">);</span>  
+    </code></pre></figure>
+
+<ul>
+  <li>Please refer to the programmer’s guide for more details.</li>
+</ul>
+
+<h1 align="left"><font color="#FF9900">Using the code</font></h1>
+
+<h3 id="1-initialize-cle">1. Initialize CLE</h3>
+
+<ul>
+  <li>Callback function</li>
+</ul>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-pascal" data-lang="pascal"><span class="k">function</span> <span class="n">MsgCallBack</span><span class="p">(</span> <span class="n">ServiceGroupID</span><span class="p">:</span><span class="n">VS_ULONG</span><span class="p">;</span> <span class="n">uMsg</span><span class="p">:</span><span class="n">VS_ULONG</span><span class="p">;</span> <span class="n">wParam</span><span class="p">:</span><span class="n">VS_UWORD</span><span class="p">;</span> <span class="n">lParam</span><span class="p">:</span><span class="n">VS_UWORD</span><span class="p">;</span> <span class="n">IsProcessed</span><span class="p">:</span><span class="n">PVS_BOOL</span><span class="p">;</span> <span class="n">Para</span><span class="p">:</span><span class="n">VS_UWORD</span> <span class="p">)</span> <span class="p">:</span> <span class="n">VS_UWORD</span><span class="p">;</span> <span class="n">cdecl</span><span class="p">;</span>
+<span class="k">var</span>
+   <span class="n">str</span> <span class="p">:</span> <span class="k">string</span><span class="p">;</span>
+<span class="k">begin</span>
+   <span class="k">if</span> <span class="p">(</span> <span class="n">uMsg</span> <span class="p">=</span> <span class="n">MSG_VSDISPLUAMSG</span><span class="p">)</span> <span class="k">or</span> <span class="p">(</span><span class="n">uMsg</span> <span class="p">=</span> <span class="n">MSG_VSDISPMSG</span> <span class="p">)</span> <span class="k">or</span> <span class="p">(</span><span class="n">uMsg</span> <span class="p">=</span> <span class="n">MSG_DISPMSG</span> <span class="p">)</span> <span class="k">or</span> <span class="p">(</span><span class="n">uMsg</span> <span class="p">=</span> <span class="n">MSG_DISPLUAMSG</span> <span class="p">)</span> <span class="k">then</span>
+   <span class="k">begin</span>
+        <span class="n">str</span> <span class="p">:=</span> <span class="n">TOVS_STRING</span><span class="p">(</span><span class="n">PVS_CHAR</span><span class="p">(</span><span class="n">wParam</span><span class="p">));</span>
+        <span class="k">if</span> <span class="k">not</span> <span class="p">(</span><span class="n">Length</span><span class="p">(</span><span class="n">str</span><span class="p">)</span> <span class="p">=</span> <span class="m">0</span> <span class="p">)</span> <span class="k">then</span>
+        <span class="k">begin</span>
+            <span class="n">Form1</span><span class="p">.</span><span class="n">Memo1</span><span class="p">.</span><span class="n">Lines</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">str</span><span class="p">);</span>
+        <span class="k">end</span><span class="p">;</span>
+   <span class="k">end</span><span class="p">;</span>
+   <span class="n">Result</span> <span class="p">:=</span> <span class="m">0</span><span class="p">;</span>
+<span class="k">end</span><span class="p">;</span>
+    </code></pre></figure>
+
+<ul>
+  <li>Use the following code to initialize CLE</li>
+</ul>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-pascal" data-lang="pascal">    
+<span class="k">var</span>
+  <span class="n">SRPControlInterface</span> <span class="p">:</span> <span class="kt">Pointer</span><span class="p">;</span>
+  <span class="n">BasicSRPInterface</span> <span class="p">:</span> <span class="kt">Pointer</span><span class="p">;</span>
+  <span class="n">ServiceID</span> <span class="p">:</span> <span class="n">VS_UUID</span><span class="p">;</span>
+  <span class="n">CLEInterface</span> <span class="p">:</span> <span class="kt">Pointer</span><span class="p">;</span>
+  
+<span class="k">begin</span>
+  
+  <span class="n">StarCore_Init</span><span class="p">(</span><span class="s">'libstarcore.dll'</span><span class="p">);</span>
+  <span class="n">VSCore_RegisterCallBackInfo</span><span class="p">(@</span><span class="n">MsgCallBack</span><span class="p">,</span><span class="m">0</span><span class="p">);</span>
+  <span class="n">VSCore_Init</span><span class="p">(</span> <span class="nb">TRUE</span><span class="p">,</span> <span class="nb">TRUE</span><span class="p">,</span> <span class="s">''</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="s">''</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span><span class="nb">nil</span><span class="p">);</span>
+	<span class="n">SRPControlInterface</span> <span class="p">:=</span> <span class="n">VSCore_QueryControlInterface</span><span class="p">();</span>
+	<span class="n">BasicSRPInterface</span> <span class="p">:=</span> <span class="n">SRPControl_QueryBasicInterface</span><span class="p">(</span><span class="n">SRPControlInterface</span><span class="p">,</span><span class="m">0</span><span class="p">);</span>
+  <span class="n">INIT_UUID</span><span class="p">(</span> <span class="n">ServiceID</span> <span class="p">);</span>
+  <span class="k">if</span><span class="p">(</span> <span class="n">SRPBasic_CreateService</span><span class="p">(</span> <span class="n">BasicSRPInterface</span><span class="p">,</span> <span class="s">''</span><span class="p">,</span><span class="s">'test'</span><span class="p">,@</span><span class="n">ServiceID</span><span class="p">,</span><span class="s">'123'</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span> <span class="p">)</span> <span class="p">=</span> <span class="nb">false</span> <span class="p">)</span> <span class="k">then</span>
+     <span class="k">exit</span><span class="p">;</span>
+  <span class="n">CLEInterface</span> <span class="p">:=</span> <span class="n">SRPBasic_GetSRPInterface</span><span class="p">(</span><span class="n">BasicSRPInterface</span><span class="p">,</span><span class="s">'test'</span><span class="p">,</span><span class="s">'root'</span><span class="p">,</span><span class="s">'123'</span><span class="p">);</span>
+  <span class="cm">(*--must set SRP_CLEInterface after getting the service interface--*)</span>
+  <span class="n">SRP_CLEInterface</span> <span class="p">:=</span> <span class="n">CLEInterface</span><span class="p">;</span>  </code></pre></figure>
+
+<h3 id="2-initialize-ruby-and-set-ruby-libraries-searching-path">2. Initialize ruby and set ruby libraries searching path</h3>
+
+<ul>
+  <li>kramdown-1.16.2 library path must be set to ruby before load.</li>
+</ul>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-pascal" data-lang="pascal">  <span class="n">SRPControl_SetScriptInterface</span><span class="p">(</span><span class="n">SRPControlInterface</span><span class="p">,</span><span class="s">'ruby'</span><span class="p">,</span><span class="s">''</span><span class="p">,</span> <span class="s">'-v 2.2.0'</span><span class="p">);</span>
+  <span class="n">SRPBasic_InitRaw</span><span class="p">(</span><span class="n">BasicSRPInterface</span><span class="p">,</span><span class="s">'ruby'</span><span class="p">,</span><span class="n">CLEInterface</span><span class="p">);</span>
+  <span class="n">ruby</span> <span class="p">:=</span> <span class="n">SRPI_ImportRawContext</span><span class="p">(</span><span class="n">CLEInterface</span><span class="p">,</span><span class="s">'ruby'</span><span class="p">,</span><span class="s">''</span><span class="p">,</span><span class="nb">false</span><span class="p">,</span><span class="n">NULL</span><span class="p">);</span>
+  <span class="n">varruby</span> <span class="p">:=</span> <span class="n">SRPOBJECT_TOVARIANT</span><span class="p">(</span><span class="n">ruby</span><span class="p">,</span><span class="nb">true</span><span class="p">);</span>
+
+  <span class="n">LOAD_PATH</span> <span class="p">:=</span> <span class="n">varruby</span><span class="p">.</span><span class="n">LOAD_PATH</span><span class="p">;</span>
+  <span class="n">LOAD_PATH</span><span class="p">.</span><span class="n">unshift</span><span class="p">(</span><span class="s">'C:\Ruby22\lib\ruby\gems\2.2.0\gems\kramdown-1.16.2\lib'</span><span class="p">);</span></code></pre></figure>
+
+<h3 id="3-call-kramdown">3. Call kramdown</h3>
+
+<figure class="highlight" style="color:gray;margin:0 0 0 2em"><pre><code class="language-pascal" data-lang="pascal">  <span class="n">varruby</span><span class="p">.</span><span class="n">require</span><span class="p">(</span><span class="s">'kramdown'</span><span class="p">);</span>
+  <span class="n">KramdownDocument</span> <span class="p">:=</span> <span class="n">varruby</span><span class="p">.</span><span class="n">eval</span><span class="p">(</span><span class="s">'Kramdown::Document'</span><span class="p">);</span>
+  <span class="n">Memo1</span><span class="p">.</span><span class="n">Lines</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">KramdownDocument</span><span class="p">);</span>
+  <span class="n">resobj</span> <span class="p">:=</span> <span class="n">KramdownDocument</span><span class="p">.</span><span class="n">create</span><span class="p">(</span><span class="s">'# aaaaaa'</span><span class="p">);</span>
+
+  <span class="n">Result</span> <span class="p">:=</span> <span class="n">resobj</span><span class="p">.</span><span class="n">method_missing</span><span class="p">(</span><span class="s">'to_html'</span><span class="p">);</span>
+  <span class="n">Memo1</span><span class="p">.</span><span class="n">Lines</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">Result</span><span class="p">);</span>   </code></pre></figure>
+
+<h1 align="left"><font color="#FF9900">Sample Download</font></h1>
+
+<ul>
+  <li>
+    <p>download from here</p>
+
+    <p><a href="/datas/delphi_ruby_call_kramdown.zip" title="delphi_ruby_call_kramdown">delphi_ruby_call_kramdown.zip</a></p>
+  </li>
+</ul>
+
+<h1 align="left"><font color="#FF9900">History</font></h1>
+
+:ET

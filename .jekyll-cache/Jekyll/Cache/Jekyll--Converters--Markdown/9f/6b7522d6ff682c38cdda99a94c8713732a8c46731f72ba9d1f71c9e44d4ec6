@@ -1,0 +1,94 @@
+I"D*<h3 id="this-example-shows-how-to-call-python-tensorflow-with-rust-language">This example shows how to call python tensorflow with rust language.</h3>
+
+<p>This example is based on <a href="https://github.com/srplab/starcore_for_rust">star_for_rust</a>, which enables rust calls other scripts.
+Here, we call tensorflow python code with rust language.
+The code is simple.</p>
+
+<h1 align="left"><font color="#FF9900">Background</font></h1>
+
+<h3 id="install">Install</h3>
+
+<ul>
+  <li>
+    <p>For windows, python and <a href="https://github.com/srplab/starcore_for_windows">cle for win32</a> must be installed.</p>
+  </li>
+  <li>
+    <p>For linux, python and <a href="https://github.com/srplab/starcore_for_linux">cle for linux</a> must be installed.</p>
+  </li>
+</ul>
+
+<h1 align="left"><font color="#FF9900">Step by Step</font></h1>
+
+<h3 id="1-python-code-to-be-called">1. Python code to be called</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-py" data-lang="py">   
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">"input_a"</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">"input_b"</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">"input_c"</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">"input_d"</span><span class="p">)</span>
+<span class="n">e</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">d</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">"input_c_d"</span><span class="p">)</span>
+<span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>     
+  </code></pre></figure>
+
+<h3 id="2-rust-code">2. Rust code</h3>
+
+<ul>
+  <li>Cargo.toml</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-rust" data-lang="rust"><span class="p">[</span><span class="n">package</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s">"rustcalltensorflow"</span>
+<span class="n">version</span> <span class="o">=</span> <span class="s">"0.1.0"</span>
+<span class="n">authors</span> <span class="o">=</span> <span class="p">[</span><span class="s">"srplab"</span><span class="p">]</span>
+
+<span class="p">[</span><span class="n">dependencies</span><span class="p">]</span>
+<span class="n">starcore_for_rust</span> <span class="o">=</span> <span class="p">{</span><span class="n">git</span><span class="o">=</span><span class="s">"https://github.com/srplab/starcore_for_rust"</span><span class="p">}</span>
+  </code></pre></figure>
+
+<ul>
+  <li>Initialize CLE</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-rust" data-lang="rust"><span class="k">let</span> <span class="n">Service</span> <span class="o">=</span> <span class="nn">starrust</span><span class="p">::</span><span class="nf">InitSimple</span><span class="p">(</span><span class="o">&amp;</span><span class="s">"test"</span><span class="p">,</span><span class="o">&amp;</span><span class="s">"123"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">&amp;</span><span class="p">[]);</span>
+<span class="nn">starrust</span><span class="p">::</span><span class="nf">RegMsgCallBack_P</span><span class="p">(</span><span class="n">MsgCallBack</span><span class="p">);</span>
+<span class="k">let</span> <span class="n">SrvGroup</span> <span class="o">=</span> <span class="n">Service</span><span class="nf">.Get</span><span class="p">(</span><span class="o">&amp;</span><span class="s">"_ServiceGroup"</span><span class="p">)</span><span class="nf">.ToSrvGroup</span><span class="p">();</span>
+<span class="n">Service</span><span class="nf">.CheckPassword</span><span class="p">(</span><span class="k">false</span><span class="p">);</span>
+  </code></pre></figure>
+
+<ul>
+  <li>Initialize python</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-rust" data-lang="rust"><span class="k">let</span> <span class="n">initResult</span> <span class="o">=</span> <span class="n">SrvGroup</span><span class="nf">.InitRaw</span><span class="p">(</span><span class="o">&amp;</span><span class="s">"python"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Service</span><span class="p">);</span>
+<span class="k">let</span> <span class="n">python</span> <span class="o">=</span> <span class="n">Service</span><span class="nf">.ImportRawContext</span><span class="p">(</span><span class="o">&amp;</span><span class="s">"python"</span><span class="p">,</span> <span class="o">&amp;</span><span class="s">""</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="o">&amp;</span><span class="s">""</span><span class="p">);</span>
+  </code></pre></figure>
+
+<ul>
+  <li>Call tensorflow</li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-rust" data-lang="rust"><span class="nd">star_call!</span><span class="p">(</span><span class="n">python</span><span class="p">,</span><span class="s">"import"</span><span class="p">,</span><span class="s">"tensorflow"</span><span class="p">);</span>
+<span class="k">let</span> <span class="n">tf</span> <span class="o">=</span> <span class="n">python</span><span class="nf">.GetObject</span><span class="p">(</span><span class="o">&amp;</span><span class="s">"tensorflow"</span><span class="p">);</span>    
+
+<span class="k">let</span> <span class="n">a</span> <span class="o">=</span> <span class="nd">star_callobject!</span><span class="p">(</span><span class="n">tf</span><span class="p">,</span><span class="s">"constant"</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="nd">star_dict!</span><span class="p">(</span><span class="n">SrvGroup</span><span class="p">,</span><span class="s">"name"</span><span class="k">=&gt;</span><span class="s">"input_a"</span><span class="p">));</span> 
+<span class="k">let</span> <span class="n">b</span> <span class="o">=</span> <span class="nd">star_callobject!</span><span class="p">(</span><span class="n">tf</span><span class="p">,</span><span class="s">"constant"</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="nd">star_dict!</span><span class="p">(</span><span class="n">SrvGroup</span><span class="p">,</span><span class="s">"name"</span><span class="k">=&gt;</span><span class="s">"input_b"</span><span class="p">));</span>
+
+<span class="k">let</span> <span class="n">c</span> <span class="o">=</span> <span class="nd">star_callobject!</span><span class="p">(</span><span class="n">tf</span><span class="p">,</span><span class="s">"multiply"</span><span class="p">,</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span><span class="nd">star_dict!</span><span class="p">(</span><span class="n">SrvGroup</span><span class="p">,</span><span class="s">"name"</span><span class="k">=&gt;</span><span class="s">"mul_c"</span><span class="p">));</span>  
+<span class="k">let</span> <span class="n">d</span> <span class="o">=</span> <span class="nd">star_callobject!</span><span class="p">(</span><span class="n">tf</span><span class="p">,</span><span class="s">"add"</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span><span class="nd">star_dict!</span><span class="p">(</span><span class="n">SrvGroup</span><span class="p">,</span><span class="s">"name"</span><span class="k">=&gt;</span><span class="s">"add_d"</span><span class="p">));</span>
+
+<span class="k">let</span> <span class="n">e</span> <span class="o">=</span> <span class="nd">star_callobject!</span><span class="p">(</span><span class="n">tf</span><span class="p">,</span><span class="s">"add"</span><span class="p">,</span><span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="nd">star_dict!</span><span class="p">(</span><span class="n">SrvGroup</span><span class="p">,</span><span class="s">"name"</span><span class="k">=&gt;</span><span class="s">"add_e_d"</span><span class="p">));</span>
+
+<span class="k">let</span> <span class="n">sess</span> <span class="o">=</span> <span class="nd">star_callobject!</span><span class="p">(</span><span class="n">tf</span><span class="p">,</span><span class="s">"Session"</span><span class="p">,);</span>
+<span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="nd">star_callobject!</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span><span class="s">"run"</span><span class="p">,</span> <span class="n">e</span><span class="p">);</span>
+
+<span class="nd">println!</span><span class="p">(</span><span class="s">"{}"</span><span class="p">,</span><span class="n">r</span><span class="nf">.ToString</span><span class="p">());</span>
+  </code></pre></figure>
+
+<h1 align="left"><font color="#FF9900">Sample Download</font></h1>
+
+<p><a href="/datas/rustcalltensorflow.zip" title="rustcalltensorflow">rustcalltensorflow.zip</a></p>
+
+:ET

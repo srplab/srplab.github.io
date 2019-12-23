@@ -1,0 +1,165 @@
+I"0G<h3 id="this-example-shows-how-to-write-rust-extension-for-android-based-on-starcore_for_rust">This example shows how to write rust extension for android based on starcore_for_rust.</h3>
+
+<h1 align="left"><font color="#FF9900">Background</font></h1>
+
+<p>This example shows how to write rust extension for android based on starcore_for_rust.</p>
+
+<h3 id="1-install">1. Install</h3>
+
+<ul>
+  <li>
+    <p>Using Ubuntu, and <a href="https://github.com/srplab/starcore_for_android">cle for android</a> should download and uncompressed.</p>
+  </li>
+  <li>
+    <p>Create package</p>
+
+    <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cargo new <span class="nt">--lib</span> rustsharelib
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Add dependencies to Cargo.toml</p>
+  </li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-rust" data-lang="rust"><span class="p">[</span><span class="n">package</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s">"rustsharelib"</span>
+<span class="n">version</span> <span class="o">=</span> <span class="s">"0.1.0"</span>
+<span class="n">authors</span> <span class="o">=</span> <span class="p">[</span><span class="s">"srplab"</span><span class="p">]</span>
+
+<span class="p">[</span><span class="n">lib</span><span class="p">]</span>
+<span class="n">crate</span><span class="o">-</span><span class="k">type</span> <span class="o">=</span> <span class="p">[</span><span class="s">"cdylib"</span><span class="p">]</span>
+<span class="n">path</span> <span class="o">=</span> <span class="s">"src/lib.rs"</span>
+
+<span class="p">[</span><span class="n">dependencies</span><span class="p">]</span>
+<span class="n">starcore_for_rust</span> <span class="o">=</span> <span class="p">{</span><span class="n">git</span><span class="o">=</span><span class="s">"https://github.com/srplab/starcore_for_rust"</span><span class="p">,</span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s">"star-sharelib"</span><span class="p">,</span><span class="s">"android_arm"</span><span class="p">]}</span>
+  </code></pre></figure>
+
+<h1 align="left"><font color="#FF9900">Create Extension</font></h1>
+
+<ul>
+  <li>
+    <p>Create rust extension is very simple.</p>
+
+    <p>Use macro “star_extension” to create extension body. In star_extension, create cle object, and define it’s function.</p>
+  </li>
+</ul>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-rust" data-lang="rust"><span class="nd">#![allow(non_snake_case)]</span>
+<span class="nd">#![allow(unused_variables)]</span>
+
+<span class="nd">#[macro_use]</span> <span class="k">extern</span> <span class="n">crate</span> <span class="n">starcore_for_rust</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">starcore_for_rust</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">os</span><span class="p">::</span><span class="nn">raw</span><span class="p">::{</span><span class="nb">c_void</span><span class="p">};</span>
+
+<span class="nd">star_extension!</span><span class="p">(</span><span class="n">SrvGroup</span><span class="p">,</span><span class="n">Service</span> <span class="p">{</span>
+  <span class="cm">/*--create a new cle object, other script can find the object by it's name--*/</span>
+  <span class="k">let</span> <span class="n">obj</span> <span class="o">=</span> <span class="n">Service</span><span class="nf">.New</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="o">&amp;</span><span class="s">"RustObject"</span><span class="p">]);</span>
+  <span class="cm">/*--define function "PrintHello" of cle object--*/</span>
+  <span class="nd">star_fn!</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="s">"PrintHello"</span><span class="p">,</span><span class="n">CleGroup</span><span class="p">,</span><span class="n">CleService</span><span class="p">,</span><span class="n">CleObject</span><span class="p">,</span><span class="n">a</span><span class="p">:</span><span class="nb">String</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span><span class="nb">f64</span> <span class="p">{</span>
+    <span class="nd">println!</span><span class="p">(</span><span class="s">"########{:?}"</span><span class="p">,</span><span class="n">a</span><span class="p">);</span>
+    <span class="nd">println!</span><span class="p">(</span><span class="s">"########{:?}"</span><span class="p">,</span><span class="n">b</span><span class="p">);</span>
+    <span class="nd">star_ret!</span><span class="p">(</span><span class="s">"return from rust"</span><span class="p">);</span>
+  <span class="p">});</span>     
+<span class="p">});</span>
+  </code></pre></figure>
+
+<ul>
+  <li>
+    <p>Build</p>
+
+    <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rustup target add arm-linux-androideabi
+<span class="c"># Create toolchain</span>
+<span class="nv">$ </span>/home/xxx/Android/android-ndk-r12b/build/tools/make-standalone-toolchain.sh <span class="nt">--platform</span><span class="o">=</span>android-18 <span class="nt">--toolchain</span><span class="o">=</span>arm-linux-androideabi-4.9 <span class="nt">--install-dir</span><span class="o">=</span>android-18-toolchain <span class="nt">--ndk-dir</span><span class="o">=</span>/home/lihm/Android/android-ndk-r12b / <span class="nt">--arch</span><span class="o">=</span>arm
+<span class="c"># Create the .cargo/config file  </span>
+<span class="nv">$ </span><span class="nb">mkdir</span> <span class="nt">-p</span> .cargo
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s1">'[build]
+target = "arm-linux-androideabi"
+
+[target.arm-linux-androideabi]
+linker = "/home/xxx/Desktop/rust.study/android-18-toolchain/bin/arm-linux-androideabi-gcc"'</span> <span class="o">&gt;</span> .cargo/config  
+cargo build
+</code></pre></div>    </div>
+
+    <p>The share library “librustsharelib.so” will be generated.</p>
+
+    <p><img src="/images/rust_extension_for_android_pic1.png" alt="" width="320px" /></p>
+  </li>
+</ul>
+
+<h1 align="left"><font color="#FF9900">Using Extension in Android App</font></h1>
+
+<p>Using “DoFile” of Service Class to load the extension</p>
+
+<h3 id="1-create-project-add-cle-and-librustsharelibso">1. Create Project, Add CLE and librustsharelib.so</h3>
+
+<p><img src="/images/rust_extension_for_android_pic2.png" alt="" width="320px" /></p>
+
+<h3 id="2-the-java-code">2. The Java Code</h3>
+
+<figure class="highlight" style="color:gray;"><pre><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">example</span><span class="o">.</span><span class="na">srplab</span><span class="o">.</span><span class="na">testrustlib</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">android.support.v7.app.AppCompatActivity</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.os.Bundle</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.srplab.www.starcore.*</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainActivity</span> <span class="kd">extends</span> <span class="nc">AppCompatActivity</span> <span class="o">{</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="nc">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+        <span class="n">setContentView</span><span class="o">(</span><span class="no">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">activity_main</span><span class="o">);</span>
+
+        <span class="cm">/*----init starcore----*/</span>
+        <span class="nc">StarCoreFactoryPath</span><span class="o">.</span><span class="na">StarCoreCoreLibraryPath</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">getApplicationInfo</span><span class="o">().</span><span class="na">nativeLibraryDir</span><span class="o">;</span>
+        <span class="nc">StarCoreFactoryPath</span><span class="o">.</span><span class="na">StarCoreShareLibraryPath</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">getApplicationInfo</span><span class="o">().</span><span class="na">nativeLibraryDir</span><span class="o">;</span>
+        <span class="nc">StarCoreFactoryPath</span><span class="o">.</span><span class="na">StarCoreOperationPath</span> <span class="o">=</span> <span class="s">"/data/data/"</span><span class="o">+</span><span class="n">getPackageName</span><span class="o">()+</span><span class="s">"/files"</span><span class="o">;</span>
+
+        <span class="kd">final</span> <span class="nc">StarCoreFactory</span> <span class="n">starcore</span><span class="o">=</span> <span class="nc">StarCoreFactory</span><span class="o">.</span><span class="na">GetFactory</span><span class="o">();</span>
+        <span class="nc">StarServiceClass</span> <span class="nc">Service</span><span class="o">=</span><span class="n">starcore</span><span class="o">.</span><span class="na">_InitSimple</span><span class="o">(</span><span class="s">"test"</span><span class="o">,</span><span class="s">"123"</span><span class="o">,</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">);</span>
+        <span class="n">starcore</span><span class="o">.</span><span class="na">_RegMsgCallBack_P</span><span class="o">(</span><span class="k">new</span> <span class="nc">StarMsgCallBackInterface</span><span class="o">()</span> <span class="o">{</span>
+            <span class="kd">public</span> <span class="nc">Object</span> <span class="nf">Invoke</span><span class="o">(</span><span class="kt">int</span> <span class="nc">ServiceGroupID</span><span class="o">,</span> <span class="kt">int</span> <span class="n">uMes</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">wParam</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">lParam</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_GetInt</span><span class="o">(</span><span class="s">"MSG_VSDISPMSG"</span><span class="o">)</span> <span class="o">||</span> <span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_GetInt</span><span class="o">(</span><span class="s">"MSG_VSDISPLUAMSG"</span><span class="o">))</span> <span class="o">{</span>
+                    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">((</span><span class="nc">String</span><span class="o">)</span> <span class="n">wParam</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_GetInt</span><span class="o">(</span><span class="s">"MSG_DISPMSG"</span><span class="o">)</span> <span class="o">||</span> <span class="n">uMes</span> <span class="o">==</span> <span class="n">starcore</span><span class="o">.</span><span class="na">_GetInt</span><span class="o">(</span><span class="s">"MSG_DISPLUAMSG"</span><span class="o">))</span> <span class="o">{</span>
+                    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"++++++++++++++++"</span> <span class="o">+</span> <span class="o">(</span><span class="nc">String</span><span class="o">)</span> <span class="n">wParam</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">});</span>
+        <span class="nc">StarSrvGroupClass</span> <span class="nc">SrvGroup</span> <span class="o">=</span> <span class="o">(</span><span class="nc">StarSrvGroupClass</span><span class="o">)</span><span class="nc">Service</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="s">"_ServiceGroup"</span><span class="o">);</span>
+        <span class="nc">Service</span><span class="o">.</span><span class="na">_CheckPassword</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+
+        <span class="nc">Object</span><span class="o">[]</span> <span class="n">result</span> <span class="o">=</span> <span class="nc">Service</span><span class="o">.</span><span class="na">_DoFile</span><span class="o">(</span><span class="s">""</span><span class="o">,</span><span class="k">this</span><span class="o">.</span><span class="na">getApplicationInfo</span><span class="o">().</span><span class="na">nativeLibraryDir</span><span class="o">+</span><span class="s">"/librustsharelib.so"</span><span class="o">,</span><span class="s">""</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">result</span><span class="o">);</span>
+
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">Service</span><span class="o">.</span><span class="na">_Get</span><span class="o">(</span><span class="s">"RustObject"</span><span class="o">));</span>
+        <span class="nc">StarObjectClass</span> <span class="nc">RustObject</span> <span class="o">=</span> <span class="o">(</span><span class="nc">StarObjectClass</span><span class="o">)</span><span class="nc">Service</span><span class="o">.</span><span class="na">_GetObject</span><span class="o">(</span><span class="s">"RustObject"</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">RustObject</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">RustObject</span><span class="o">.</span><span class="na">_Call</span><span class="o">(</span><span class="s">"PrintHello"</span><span class="o">,</span><span class="s">"------------1"</span><span class="o">,</span><span class="mf">234.56</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></figure>
+
+<p>Run</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>05-11 20:28:28.434 22785-22785/com.example.srplab.testrustlib I/skeletonproc_module,31657: create service group[0], free core version[2.5.2.259]
+05-11 20:28:28.435 22785-22785/com.example.srplab.testrustlib I/skeletonproc_module,31661: <span class="nb">install date</span><span class="o">[</span>2018/5/11],please register starcore <span class="o">[</span>http://www.srplab.com]
+05-11 20:28:28.435 22785-22785/com.example.srplab.testrustlib I/skeletonproc_module,31700: lua engine[Lua 5.3.4  Copyright <span class="o">(</span>C<span class="o">)</span> 1994-2017 Lua.org, PUC-Rio]
+05-11 20:28:28.455 22785-22790/com.example.srplab.testrustlib I/zygote: Do partial code cache collection, <span class="nv">code</span><span class="o">=</span>62KB, <span class="nv">data</span><span class="o">=</span>57KB
+05-11 20:28:28.455 22785-22790/com.example.srplab.testrustlib I/zygote: After code cache collection, <span class="nv">code</span><span class="o">=</span>58KB, <span class="nv">data</span><span class="o">=</span>53KB
+05-11 20:28:28.455 22785-22790/com.example.srplab.testrustlib I/zygote: Increasing code cache capacity to 256KB
+05-11 20:28:28.461 22785-22785/com.example.srplab.testrustlib I/skeletonproc_module,1582: create service success[test]
+05-11 20:28:36.498 22785-22785/com.example.srplab.testrustlib I/System.out: load share library <span class="o">[</span>/data/app/com.example.srplab.testrustlib-1o6SWxDBNiXakvfL29JMwg<span class="o">==</span>/lib/arm/librustsharelib.so]
+05-11 20:28:36.500 22785-22785/com.example.srplab.testrustlib I/skeletonproc_module,17372: load share library <span class="o">[</span>/data/app/com.example.srplab.testrustlib-1o6SWxDBNiXakvfL29JMwg<span class="o">==</span>/lib/arm/librustsharelib.so]
+05-11 20:28:37.277 22785-22785/com.example.srplab.testrustlib I/System.out: <span class="o">[</span>Ljava.lang.Object<span class="p">;</span>@ac3bebc
+05-11 20:28:38.226 22785-22785/com.example.srplab.testrustlib I/System.out: RustObject
+05-11 20:28:39.633 22785-22785/com.example.srplab.testrustlib I/System.out: RustObject
+05-11 20:28:40.334 22785-22785/com.example.srplab.testrustlib I/System.out: <span class="k">return </span>from rust
+</code></pre></div></div>
+
+<h1 align="left"><font color="#FF9900">Sample Download</font></h1>
+
+<p><a href="/datas/rust_extension_for_android.zip" title="rust_extension_for_android">rust_extension_for_android.zip</a></p>
+
+:ET
